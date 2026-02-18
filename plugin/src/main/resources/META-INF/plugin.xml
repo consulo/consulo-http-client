@@ -1,0 +1,263 @@
+<consulo-plugin>
+    <id>consulo.rest.client</id>
+    <name>REST Client</name>
+    <vendor email="375709770@qq.com" url="https://www.zhihu.com/people/liang-yu-dong-44">jufeng98</vendor>
+
+    <tags>
+        <tag>web.tools</tag>
+    </tags>
+    
+    <description>
+        <![CDATA[
+            Provides the ability to edit and execute HTTP requests from the code editor of IDEA.<br>
+            <ul>
+                <li>Support sending GET, POST and other requests</li>
+                <li>Support sending WebSocket request</li>
+                <li>Support sending Dubbo request</li>
+                <li>Support Environment, build-in variable and build-in method</li>
+                <li>Support jump to SpringMVC Controller method from url</li>
+                <li>Show SpringMVC Controller method information when hover in url</li>
+                <li>Support jump to SpringMVC Controller method bean field from json property</li>
+                <li>Show SpringMVC Controller method bean field information when hover in json key</li>
+                <li>
+                    Support JavaScript previous handler, post handler and global handler(JavaScript syntax highlighting
+                    depends on WebCalm plugin. After install WebCalm, please restart IDEA, Otherwise JavaScript syntax
+                    highlighting will not work.)
+                </li>
+                <li>Support reading file content as http request body</li>
+                <li>Support saving http response body to file</li>
+                <li>When the response Content-Type is image type, it supports direct preview of the corresponding image</li>
+                <li>Support preview HTML response</li>
+                <li>Support preview pdf response</li>
+                <li>Support searching SpringMVC Api in the SearchEverywhere Dialog</li>
+                <li>Support Mock Server</li>
+            </ul>
+            Getting Started:<br>
+            <ol>
+                <li>Create a file with an HTTP suffix</li>
+                <li>Type gtr or ptr to trigger live templates and quickly create HTTP requests</li>
+                <li>Click the run button on the left side of the editor to sending request and view the response</li>
+            </ol>
+            提供从 IDEA Editor 编写和执行 HTTP 请求的能力：<br>
+            <ul>
+                <li>支持发起 GET、POST 等请求</li>
+                <li>支持发起 WebSocket 请求</li>
+                <li>支持发起 Dubbo 请求</li>
+                <li>支持环境变量、内置变量和内置方法</li>
+                <li>支持从 url 跳转到对应的 SpringMVC Controller 方法</li>
+                <li>url 悬浮提示对应的 SpringMVC Controller 方法信息</li>
+                <li>支持从 json 属性跳转到对应的 SpringMVC Controller 方法的出入参 Bean 字段</li>
+                <li>json 属性悬浮提示对应的 SpringMVC Controller 方法的出入参 Bean 字段信息</li>
+                <li>
+                    支持 JavaScript 语法的前置处理器、后置处理器和全局前置处理器(JavaScript 语法高亮功能依赖 WebCalm 插件.
+                    在安装 WebCalm 插件后, 请重启 IDEA, 否则 js 语法高亮功能不会生效)
+                </li>
+                <li>支持从文件读取内容作为请求体</li>
+                <li>支持保存响应到文件</li>
+                <li>当响应的 Content-Type 为图片时支持直接预览响应的图片</li>
+                <li>支持预览 HTML 响应</li>
+                <li>支持预览 pdf 响应</li>
+                <li>支持在 SearchEverywhere 窗口搜索 SpringMVC Api</li>
+                <li>支持 Mock Server</li>
+            </ul>
+            开始使用：<br>
+            <ol>
+                <li>创建一个 http 后缀的文件</li>
+                <li>输入 gtr 或 ptr 等触发实时模板从而快速创建 http 请求</li>
+                <li>点击编辑器左侧的运行按钮发起请求并查看响应</li>
+            </ol>
+        ]]>
+    </description>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <postStartupActivity implementation="org.javamaster.httpclient.impl.startup.HttpPostStartupActivity"/>
+
+        <notificationGroup id="HttpClient.STICKY_BALLOON"
+                           isLogByDefault="true"
+                           displayType="STICKY_BALLOON" bundle="messages.HttpClientBundle"
+                           key="notification.group.httprequest.sticky_balloon"/>
+
+        <fileType
+                name="HTTP"
+                implementationClass="org.javamaster.httpclient.HttpFileType"
+                fieldName="INSTANCE"
+                language="http"
+                extensions="http"/>
+        <lang.parserDefinition
+                language="http"
+                implementationClass="org.javamaster.httpclient.parser.HttpParserDefinition"/>
+        <lang.ast.factory language="http" implementationClass="org.javamaster.httpclient.impl.factory.HttpASTFactory"/>
+        <editorHighlighterProvider filetype="HTTP"
+                                   implementationClass="org.javamaster.httpclient.highlighting.HttpHighlighterProvider"/>
+        <fileBasedIndex implementation="org.javamaster.httpclient.impl.index.HttpEnvironmentIndex"/>
+        <multiHostInjector
+                implementation="org.javamaster.httpclient.impl.inject.MessageBodyInjectionContributor"/>
+
+        <psi.referenceContributor language="TEXT"
+                                  implementation="org.javamaster.httpclient.impl.reference.TextPsiReferenceContributor"/>
+        <psi.referenceContributor language="XML"
+                                  implementation="org.javamaster.httpclient.impl.reference.XmlPsiReferenceContributor"/>
+        <lang.elementManipulator forClass="org.javamaster.httpclient.psi.HttpFilePath"
+                                 implementationClass="org.javamaster.httpclient.impl.manipulator.HttpFilePathManipulator"/>
+        <lang.elementManipulator forClass="org.javamaster.httpclient.psi.HttpVariableName"
+                                 implementationClass="org.javamaster.httpclient.impl.manipulator.HttpVariableNameManipulator"/>
+        <lang.elementManipulator forClass="org.javamaster.httpclient.psi.HttpRequestTarget"
+                                 implementationClass="org.javamaster.httpclient.impl.manipulator.HttpRequestTargetManipulator"/>
+        <renameHandler implementation="org.javamaster.httpclient.impl.manipulator.HttpRenameHandler"/>
+        <renamePsiElementProcessor
+                implementation="org.javamaster.httpclient.impl.manipulator.HttpRenamePsiElementProcessor"/>
+        <configurationType implementation="org.javamaster.httpclient.impl.runconfig.HttpConfigurationType"/>
+        <runDashboardDefaultTypesProvider
+                implementation="org.javamaster.httpclient.impl.dashboard.HttpDashboardDefaultTypesProvider"/>
+        <runDashboardCustomizer implementation="org.javamaster.httpclient.impl.dashboard.HttpRunDashboardCustomizer"
+                                id="httpRunDashboardCustomizer"/>
+        <executor implementation="org.javamaster.httpclient.impl.dashboard.HttpExecutor" order="first" id="httpExecutor"/>
+        <programRunner implementation="org.javamaster.httpclient.impl.dashboard.HttpProgramRunner"/>
+<!--        <highlightErrorFilter implementation="org.javamaster.httpclient.suppress.MyHighlightErrorFilter"/>-->
+<!--        <lang.inspectionSuppressor language="JSON"-->
+<!--                                   implementationClass="org.javamaster.httpclient.suppress.JsonInspectionSuppressor"/>-->
+        <annotator language="JSON"
+                   implementationClass="org.javamaster.httpclient.impl.annotator.TextVariableAnnotator"/>
+        <annotator language="TEXT"
+                   implementationClass="org.javamaster.httpclient.impl.annotator.TextVariableAnnotator"/>
+        <annotator language="XML"
+                   implementationClass="org.javamaster.httpclient.impl.annotator.TextVariableAnnotator"/>
+        <annotator language="http"
+                   implementationClass="org.javamaster.httpclient.impl.annotator.HttpAnnotator"/>
+        <localInspection groupKey="inspection.http.group.name" language="http"
+                         shortName="HttpInspection" enabledByDefault="true" level="WARNING"
+                         implementationClass="org.javamaster.httpclient.impl.inspection.HttpInspection"
+                         key="inspection.http.display.name" bundle="messages.HttpClientBundle"/>
+        <localInspection groupKey="inspection.http.group.name" language="JSON"
+                         shortName="MyJsonInspection" enabledByDefault="true" level="WARNING"
+                         implementationClass="org.javamaster.httpclient.impl.inspection.MyJsonInspection"
+                         key="inspection.http.display.name" bundle="messages.HttpClientBundle"/>
+        <localInspection groupKey="inspection.http.group.name" language="TEXT"
+                         shortName="MyTextInspection" enabledByDefault="true" level="WARNING"
+                         implementationClass="org.javamaster.httpclient.impl.inspection.MyTextInspection"
+                         key="inspection.http.display.name" bundle="messages.HttpClientBundle"/>
+<!--        <psi.referenceContributor language="JSON"-->
+<!--                                  implementation="org.javamaster.httpclient.reference.JsonValuePsiReferenceContributor"/>-->
+        <psi.referenceContributor language="JSON"
+                                  implementation="org.javamaster.httpclient.impl.reference.JsonKeyDubboServiceMethodFieldPsiReferenceContributor"/>
+        <lang.documentationProvider language="JSON"
+                                    implementationClass="org.javamaster.httpclient.impl.doc.JsonKeyMethodFieldDocumentationProvider"/>
+        <completion.contributor language="http" id="HttpCompletionContributor" order="last"
+                                implementationClass="org.javamaster.httpclient.impl.completion.HttpCompletionContributor"/>
+        <typedHandler implementation="org.javamaster.httpclient.impl.typeHandler.HttpTypedHandler"/>
+        <braceMatcher filetype="http"
+                      implementationClass="org.javamaster.httpclient.impl.braceMatcher.HttpBraceMatcher"/>
+        <lang.foldingBuilder language="http"
+                             implementationClass="org.javamaster.httpclient.impl.folding.HttpFoldingBuilder"/>
+        <lang.psiStructureViewFactory language="http"
+                                      implementationClass="org.javamaster.httpclient.impl.structure.HttpRequestStructureViewFactory"/>
+        <defaultLiveTemplates file="liveTemplates/request.xml"/>
+
+        <liveTemplateContext baseContextId="REQUEST" contextId="REQUEST_RESPONSE_HANDLER_PATH"
+                             implementation="org.javamaster.httpclient.impl.liveTemplates.HttpJsHandlerTemplateContextType"/>
+        <liveTemplateContext contextId="HTTP_CLIENT_ENVIRONMENT_INSIDE_ENVIRONMENT"
+                             implementation="org.javamaster.httpclient.impl.liveTemplates.HttpEnvFileTemplateContextType"/>
+
+
+        <psi.referenceContributor language="http"
+                                  implementation="org.javamaster.httpclient.impl.reference.HttpUrlControllerMethodPsiReferenceContributor"/>
+        <psi.referenceContributor language="JSON"
+                                  implementation="org.javamaster.httpclient.impl.reference.JsonKeyControllerMethodFieldPsiReferenceContributor"/>
+        <lang.documentationProvider language="http"
+                                    implementationClass="org.javamaster.httpclient.impl.doc.HttpUrlControllerMethodDocumentationProvider"/>
+        <lang.documentationProvider language="http"
+                                    implementationClass="org.javamaster.httpclient.impl.doc.HttpHeadersDocumentationProvider"/>
+        <lang.documentationProvider language="http"
+                                    implementationClass="org.javamaster.httpclient.impl.doc.HttpDocumentationProvider"/>
+        <lang.documentationProvider language="JSON"
+                                    implementationClass="org.javamaster.httpclient.impl.doc.HttpDocumentationProvider"/>
+        <lang.documentationProvider language="TEXT"
+                                    implementationClass="org.javamaster.httpclient.impl.doc.HttpDocumentationProvider"/>
+        <searchEverywhereContributor implementation="org.javamaster.httpclient.impl.symbol.ApisGotoSEContributor$Factory"/>
+        <lang.findUsagesProvider language="http"
+                                 implementationClass="org.javamaster.httpclient.impl.usage.HttpFindUsagesProvider"/>
+        <codeInsight.declarativeInlayProvider language="JAVA"
+                                              implementationClass="org.javamaster.httpclient.impl.inlay.UrlInlineHintsProvider"
+                                              isEnabledByDefault="true"
+                                              group="URL_PATH_GROUP"
+                                              providerId="http.client.url"
+                                              bundle="messages.HttpClientBundle"
+                                              nameKey="url.name"
+                                              descriptionKey="url.description"/>
+
+
+        <intentionAction>
+            <language>http</language>
+            <className>org.javamaster.httpclient.impl.intent.HttpSwitchEnvironmentIntention</className>
+            <bundleName>messages.HttpClientBundle</bundleName>
+            <categoryKey>intention.http.category.name</categoryKey>
+        </intentionAction>
+        <intentionAction>
+            <language>http</language>
+            <className>org.javamaster.httpclient.impl.intent.ConvertToCurlAndCpIntention</className>
+            <bundleName>messages.HttpClientBundle</bundleName>
+            <categoryKey>intention.http.category.name</categoryKey>
+        </intentionAction>
+    </extensions>
+
+    <!--<actions>
+        <action class="org.javamaster.httpclient.action.ApiSearchEverywhereAction">
+            <keyboard-shortcut first-keystroke="control alt SLASH" keymap="$default"/>
+        </action>
+
+        <group id="httpToolbarLeftBtnGroup">
+            <action class="org.javamaster.httpclient.action.ShowAddHttpPopupAction"/>
+            <action class="org.javamaster.httpclient.action.ShowRequestHistoryAction"/>
+            <separator/>
+            <action class="org.javamaster.httpclient.action.ShowVariableFormAction"/>
+            <action class="org.javamaster.httpclient.action.ConvertToCurlAndCpAction"/>
+            <separator/>
+            <action class="org.javamaster.httpclient.action.RunAllRequestAction"/>
+        </group>
+
+        <group id="addToHttpGroup">
+            <action class="org.javamaster.httpclient.action.addHttp.AddGetAction"/>
+            <separator/>
+            <action class="org.javamaster.httpclient.action.addHttp.AddPostJsonAction"/>
+            <action class="org.javamaster.httpclient.action.addHttp.AddPostParamAction"/>
+            <action class="org.javamaster.httpclient.action.addHttp.AddPostMultipartTextAction"/>
+            <action class="org.javamaster.httpclient.action.addHttp.AddPostMultipartFileAction"/>
+            <separator/>
+            <action class="org.javamaster.httpclient.action.addHttp.AddWsAction"/>
+            <separator/>
+            <action class="org.javamaster.httpclient.action.addHttp.AddDubboAction"/>
+            <action class="org.javamaster.httpclient.action.addHttp.AddDubboNameAction"/>
+            <separator/>
+            <action class="org.javamaster.httpclient.action.addHttp.ImportCurlAction"/>
+            <separator/>
+            <action class="org.javamaster.httpclient.action.addHttp.AddEnvFileAction"/>
+            <action class="org.javamaster.httpclient.action.addHttp.AddEnvPrivateFileAction"/>
+        </group>
+
+        <group id="httpToolbarRightBtnGroup">
+            <action class="org.javamaster.httpclient.action.ShowExamplePopupAction"/>
+        </group>
+
+        <group id="exampleHttpGroup">
+            <action class="org.javamaster.httpclient.action.example.GetExampleAction"/>
+            <separator/>
+            <action class="org.javamaster.httpclient.action.example.PostExampleAction"/>
+            <action class="org.javamaster.httpclient.action.example.PresentationAction"/>
+            <action class="org.javamaster.httpclient.action.example.ScriptExampleAction"/>
+            <action classH="org.javamaster.httpclient.action.example.AuthExampleAction"/>
+            <separator/>
+            <action class="org.javamaster.httpclient.action.example.WsExampleAction"/>
+            <action class="org.javamaster.httpclient.action.example.DubboExampleAction"/>
+            <action class="org.javamaster.httpclient.action.example.MockServerExampleAction"/>
+            <separator/>
+            <action class="org.javamaster.httpclient.action.example.CryptoJsExampleAction"/>
+        </group>
+
+        <group id="httpDashboardVerticalGroup">
+            <action class="org.javamaster.httpclient.action.dashboard.ScrollToTopAction"/>
+            <action class="org.javamaster.httpclient.action.dashboard.ScrollToEndAction"/>
+            <action class="org.javamaster.httpclient.action.dashboard.CopyReqResBodyAction"/>
+        </group>
+    </actions>-->
+
+</consulo-plugin>

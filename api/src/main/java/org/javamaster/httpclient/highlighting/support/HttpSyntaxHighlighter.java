@@ -6,18 +6,18 @@ import consulo.colorScheme.TextAttributesKey;
 import consulo.language.ast.IElementType;
 import consulo.language.editor.highlight.SyntaxHighlighterBase;
 import consulo.language.lexer.Lexer;
-import consulo.util.collection.Maps;
 import org.javamaster.httpclient.parser.HttpAdapter;
 import org.javamaster.httpclient.psi.HttpTypeSets;
 import org.javamaster.httpclient.psi.HttpTypes;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import static consulo.colorScheme.TextAttributesKey.createTextAttributesKey;
 
 public class HttpSyntaxHighlighter extends SyntaxHighlighterBase {
-    private static final Map<IElementType, TextAttributesKey> ATTRIBUTE_MAP = Maps.newHashMap();
+    private static final Map<IElementType, TextAttributesKey> ATTRIBUTE_MAP = new HashMap<>();
 
     public static final TextAttributesKey HTTP_PARAMETER_NAME;
     public static final TextAttributesKey HTTP_PARAMETER_VALUE;

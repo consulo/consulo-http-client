@@ -1,0 +1,27 @@
+package org.javamaster.httpclient.impl.psi.impl;
+
+import consulo.language.impl.ast.FileElement;
+import org.javamaster.httpclient.psi.HttpMyJsonValue;
+import org.javamaster.httpclient.psi.HttpTypes;
+import org.javamaster.httpclient.impl.psi.MyHttpTypes;
+
+/**
+ * @author yudong
+ */
+public class TextVariableLazyFileElement extends FileElement {
+    private final CharSequence buffer;
+
+    public TextVariableLazyFileElement(CharSequence buffer) {
+        super(MyHttpTypes.TEXT_VARIABLE_FILE, buffer);
+        this.buffer = buffer;
+    }
+
+    public CharSequence getBuffer() {
+        return buffer;
+    }
+
+    public static HttpMyJsonValue parse(String value) {
+        TextVariableLazyFileElement fileElement = new TextVariableLazyFileElement(value);
+        return (HttpMyJsonValue) HttpTypes.Factory.createElement(fileElement.getFirstChildNode());
+    }
+}

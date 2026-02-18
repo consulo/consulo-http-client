@@ -1,6 +1,7 @@
+
 {
   parserClass="org.javamaster.httpclient.parser.HttpParser"
-  parserUtilClass="org.javamaster.httpclient.parser.HttpParserUtil"
+  parserUtilClass="consulo.language.impl.parser.GeneratedParserUtilBase"
 
   extends="consulo.language.impl.psi.ASTWrapperPsiElement"
 
@@ -64,7 +65,7 @@ globalVariableName ::= AT globalNameFlag {
         getReferences
         getNameIdentifier
     ]
-    implements = "com.intellij.psi.PsiNameIdentifierOwner"
+    implements = "consulo.language.psi.PsiNameIdentifierOwner"
 }
 private globalNameFlag ::= GLOBAL_NAME {
     name = "variable name"

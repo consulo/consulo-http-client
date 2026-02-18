@@ -32,7 +32,7 @@
     <repositories>
         <repository>
             <id>consulo</id>
-            <url>https://maven.consulo.io/repository/snapshots/</url>
+            <url>https://maven.consulo.dev/repository/snapshots/</url>
             <snapshots>
                 <enabled>true</enabled>
                 <updatePolicy>interval:60</updatePolicy>
@@ -63,8 +63,24 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpmime</artifactId>
+            <version>4.5.14</version>
             <optional>true</optional>
         </dependency>
     </dependencies>

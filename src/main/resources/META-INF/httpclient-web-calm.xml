@@ -1,6 +1,0 @@
-<idea-plugin>
-    <extensions defaultExtensionNs="com.intellij">
-        <multiHostInjector
-                implementation="org.javamaster.httpclient.inject.ScriptBodyInjectionContributor"/>
-    </extensions>
-</idea-plugin>

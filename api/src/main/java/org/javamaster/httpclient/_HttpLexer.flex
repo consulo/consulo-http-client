@@ -1,11 +1,11 @@
 package org.javamaster.httpclient;
 
-import com.intellij.psi.tree.IElementType;
+import consulo.language.ast.IElementType;
 import org.javamaster.httpclient.utils.LexerUtils;
 import static org.javamaster.httpclient.utils.LexerUtils.*;
 
-import static com.intellij.psi.TokenType.BAD_CHARACTER;
-import static com.intellij.psi.TokenType.WHITE_SPACE;
+import static consulo.language.ast.TokenType.BAD_CHARACTER;
+import static consulo.language.ast.TokenType.WHITE_SPACE;
 import static org.javamaster.httpclient.psi.HttpTypes.*;
 
 
@@ -29,7 +29,7 @@ import static org.javamaster.httpclient.psi.HttpTypes.*;
 
 %public
 %class _HttpLexer
-%implements com.intellij.lexer.FlexLexer
+%implements consulo.language.lexer.FlexLexer
 %function advance
 %type IElementType
 %unicode
