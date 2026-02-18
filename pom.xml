@@ -44,7 +44,5 @@
     <modules>
         <module>api</module>
         <module>plugin</module>
-        <module>java-impl</module>
-        <module>javascript-impl</module>
     </modules>
 </project>

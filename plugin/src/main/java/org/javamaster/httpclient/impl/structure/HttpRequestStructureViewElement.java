@@ -19,12 +19,12 @@ import consulo.util.lang.Pair;
 import consulo.util.lang.StringUtil;
 import org.javamaster.httpclient.HttpIcons;
 import org.javamaster.httpclient.NlsBundle;
-import org.javamaster.httpclient.impl.utils.HttpUtils;
 import org.javamaster.httpclient.parser.HttpFile;
 import org.javamaster.httpclient.psi.HttpContentType;
 import org.javamaster.httpclient.psi.HttpMessageBody;
 import org.javamaster.httpclient.psi.HttpRequestBlock;
 import org.javamaster.httpclient.psi.impl.HttpPsiImplUtil;
+import org.javamaster.httpclient.utils.HttpUtilsPart;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -176,9 +176,9 @@ public class HttpRequestStructureViewElement extends PsiTreeElementBase<PsiEleme
 
         String tabName;
         var method = request.getMethod();
-        tabName = HttpUtils.getTabName(method);
+        tabName = HttpUtilsPart.getTabName(method);
 
-        Image icon = HttpUtils.pickMethodIcon(method.getText());
+        Image icon = HttpUtilsPart.pickMethodIcon(method.getText());
 
         children.add(
             create(request, tabName, location.toString(), icon, StringUtil.isNotEmpty(originalHost))
@@ -193,7 +193,7 @@ public class HttpRequestStructureViewElement extends PsiTreeElementBase<PsiEleme
                 mimeType = contentType.mimeType();
             }
 
-            Image bodyIcon = isImageType(contentType.mimeType()) ?
+            Image bodyIcon = contentType != null && isImageType(contentType.mimeType()) ?
                 HttpIcons.IMAGE :
                 getInjectedLanguageIcon(project, messagesGroup.getMessageBody());
 

@@ -1,5 +1,6 @@
 package org.javamaster.httpclient.impl.typeHandler;
 
+import consulo.annotation.component.ExtensionImpl;
 import consulo.language.editor.action.TypedHandlerDelegate;
 import consulo.document.Document;
 import consulo.codeEditor.Editor;
@@ -22,6 +23,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
+@ExtensionImpl
 public class HttpTypedHandler extends TypedHandlerDelegate {
 
     @NotNull
@@ -38,7 +40,7 @@ public class HttpTypedHandler extends TypedHandlerDelegate {
             return Result.CONTINUE;
         }
 
-        PsiFile psiFile = PsiUtil.getPsiFile(project, virtualFile);
+        PsiFile psiFile = PsiUtilCore.getPsiFile(project, virtualFile);
 
         if (!(psiFile instanceof HttpFile) || (c != '%' && c != '{')) {
             return Result.CONTINUE;

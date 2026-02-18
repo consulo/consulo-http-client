@@ -1,5 +1,7 @@
 package org.javamaster.httpclient.impl.completion;
 
+import consulo.annotation.component.ExtensionImpl;
+import consulo.language.Language;
 import consulo.language.editor.completion.CompletionContributor;
 import consulo.language.editor.completion.CompletionInitializationContext;
 import consulo.language.editor.completion.CompletionType;
@@ -9,13 +11,15 @@ import consulo.language.psi.PsiElement;
 import consulo.language.psi.PsiWhiteSpace;
 import consulo.language.ast.TokenSet;
 import consulo.language.psi.util.PsiTreeUtil;
-import org.javamaster.httpclient.completion.provider.*;
+import jakarta.annotation.Nonnull;
+import org.javamaster.httpclient.HttpLanguage;
 import org.javamaster.httpclient.impl.completion.provider.*;
 import org.javamaster.httpclient.psi.*;
 
 /**
  * @author yudong
  */
+@ExtensionImpl
 public class HttpCompletionContributor extends CompletionContributor {
     private final TokenSet identifierPredecessor = TokenSet.create(
         HttpTypes.IDENTIFIER,
@@ -179,5 +183,11 @@ public class HttpCompletionContributor extends CompletionContributor {
 
             return null;
         }
+    }
+
+    @Nonnull
+    @Override
+    public Language getLanguage() {
+        return HttpLanguage.INSTANCE;
     }
 }

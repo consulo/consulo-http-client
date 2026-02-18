@@ -1,13 +1,14 @@
 package org.javamaster.httpclient.impl.completion.support;
 
+import consulo.codeEditor.Editor;
+import consulo.codeEditor.util.EditorModificationUtil;
+import consulo.document.Document;
 import consulo.language.editor.completion.lookup.InsertHandler;
 import consulo.language.editor.completion.lookup.InsertionContext;
 import consulo.language.editor.completion.lookup.LookupElement;
-import consulo.document.Document;
-import consulo.codeEditor.Editor;
+import consulo.language.psi.PsiDocumentManager;
 import consulo.project.Project;
 import consulo.util.lang.StringUtil;
-import consulo.language.psi.PsiDocumentManager;
 
 /**
  * @author yudong
@@ -39,7 +40,7 @@ public class HttpSuffixInsertHandler implements InsertHandler<LookupElement> {
 
         int offset = StringUtil.skipWhitespaceForward(document.getCharsSequence(), editor.getCaretModel().getOffset());
         if (document.getTextLength() == offset || !isEqualsToSuffix(document, offset)) {
-            EditorModificationUtilEx.insertStringAtCaret(editor, mySuffix);
+            EditorModificationUtil.insertStringAtCaret(editor, mySuffix);
             documentManager.commitDocument(editor.getDocument());
         }
 

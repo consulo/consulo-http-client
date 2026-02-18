@@ -1,12 +1,8 @@
 package org.javamaster.httpclient.impl.formatter.support;
 
-import consulo.language.codeStyle.Block;
-import consulo.language.codeStyle.Indent;
-import consulo.language.codeStyle.Spacing;
-import consulo.language.codeStyle.Wrap;
 import consulo.language.ast.ASTNode;
-import consulo.language.codeStyle.CodeStyleSettings;
-import consulo.language.codeStyle.DefaultInjectedLanguageBlockBuilder;
+import consulo.language.codeStyle.*;
+import consulo.language.codeStyle.inject.DefaultInjectedLanguageBlockBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

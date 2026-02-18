@@ -17,6 +17,7 @@ import consulo.language.psi.PsiFile;
 import org.javamaster.httpclient.HttpIcons;
 import org.javamaster.httpclient.impl.action.dashboard.DashboardBaseAction;
 import org.javamaster.httpclient.NlsBundle;
+import org.javamaster.httpclient.impl.folding.HttpFoldingBuilder;
 import org.javamaster.httpclient.parser.HttpFile;
 import org.javamaster.httpclient.psi.HttpHeader;
 import org.javamaster.httpclient.psi.HttpRequestBlock;
@@ -29,7 +30,7 @@ import java.util.List;
  * @author yudong
  */
 public class FoldHeadersAction extends DashboardBaseAction implements CustomComponentAction {
-    public static final Key<Boolean> httpDashboardFoldHeaderKey = Key.create("org.javamaster.dashboard.httpDashboardFoldHeader");
+    public static final Key<Boolean> httpDashboardFoldHeaderKey = HttpFoldingBuilder.httpDashboardFoldHeaderKey;
     public static boolean reqFoldHeader = true;
     public static boolean resFoldHeader = true;
 

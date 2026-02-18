@@ -13,10 +13,10 @@ import org.javamaster.httpclient.impl.curl.support.CurlFormBodyPart;
 import org.javamaster.httpclient.impl.curl.support.CurlRequest;
 import org.javamaster.httpclient.impl.curl.support.CurlTokenizer;
 import org.javamaster.httpclient.impl.dashboard.HttpProcessHandler;
-import org.javamaster.httpclient.model.HttpMethod;
-import org.javamaster.httpclient.psi.HttpRequestBlock;
 import org.javamaster.httpclient.impl.ui.HttpEditorTopForm;
 import org.javamaster.httpclient.impl.utils.CurlUtils;
+import org.javamaster.httpclient.model.HttpRequestEnum;
+import org.javamaster.httpclient.psi.HttpRequestBlock;
 
 import java.io.File;
 import java.net.URI;
@@ -212,7 +212,7 @@ public class CurlParser {
     }
 
     private void addDataToRequest(String optionName, CurlRequest request, String data) {
-        request.setHttpMethod(HttpMethod.POST.name());
+        request.setHttpMethod(HttpRequestEnum.POST.name());
 
         final Object curlDataOption = CurlDataOptionFactory.getCurlDataOption(optionName, data);
 
@@ -307,7 +307,7 @@ public class CurlParser {
 
         request.getFormBodyPart().add(curlFormBodyPart);
 
-        request.setHttpMethod(HttpMethod.POST.name());
+        request.setHttpMethod(HttpRequestEnum.POST.name());
         request.setFileUpload(true);
 
         if (request.getMultipartBoundary() == null) {
@@ -377,7 +377,7 @@ public class CurlParser {
 
     private static void addURL(CurlRequest request, String currentToken) {
         if (request.getHttpMethod() == null) {
-            addHttpMethodToRequest(request, HttpMethod.GET.name());
+            addHttpMethodToRequest(request, HttpRequestEnum.GET.name());
         }
 
         try {

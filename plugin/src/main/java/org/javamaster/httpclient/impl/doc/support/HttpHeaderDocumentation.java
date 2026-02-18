@@ -3,7 +3,6 @@ package org.javamaster.httpclient.impl.doc.support;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import consulo.util.lang.StringUtil;
-import org.javamaster.httpclient.NlsBundle;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -47,7 +46,7 @@ public class HttpHeaderDocumentation {
     }
 
     public String getUrl() {
-        return "https://developer.mozilla.org/" + NlsBundle.region() + "/docs/Web/HTTP/Headers/" + name;
+        return "https://developer.mozilla.org/en_US/docs/Web/HTTP/Headers/" + name;
     }
 
     public @Nullable String generateDoc() {

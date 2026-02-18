@@ -8,16 +8,17 @@ module consulo.rest.client {
     requires consulo.language.editor.api;
     requires consulo.execution.api;
     requires consulo.diff.api;
+    requires consulo.http.api;
     
-    requires consulo.json.api;
+ //   requires consulo.json.api;
 
     requires consulo.language.editor.refactoring.api;
     requires consulo.language.impl;
 
     requires forms.rt;
 
-    requires org.mozilla.rhino;
-    requires json.path;
+//    requires org.mozilla.rhino;
+//    requires json.path;
 
     requires org.apache.commons.compress;
     requires org.apache.commons.io;

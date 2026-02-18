@@ -12,8 +12,6 @@ module consulo.rest.client.api {
     requires transitive com.google.gson;
     requires transitive org.apache.commons.lang3;
 
-    requires transitive java.net.http;
-
     exports consulo.restClient.icon;
     exports consulo.restClient.localize;
     exports org.javamaster.httpclient;

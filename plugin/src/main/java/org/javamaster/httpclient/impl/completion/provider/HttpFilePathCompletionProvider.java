@@ -4,25 +4,26 @@ import consulo.language.editor.completion.CompletionParameters;
 import consulo.language.editor.completion.CompletionProvider;
 import consulo.language.editor.completion.CompletionResultSet;
 import consulo.language.editor.completion.lookup.LookupElementBuilder;
-import consulo.virtualFileSystem.VirtualFile;
-import consulo.virtualFileSystem.util.VirtualFileVisitor;
 import consulo.language.psi.PsiDirectory;
 import consulo.language.psi.PsiElement;
+import consulo.language.psi.PsiUtilCore;
 import consulo.language.util.ProcessingContext;
+import consulo.virtualFileSystem.VirtualFile;
+import consulo.virtualFileSystem.util.VirtualFileUtil;
+import consulo.virtualFileSystem.util.VirtualFileVisitor;
 import org.javamaster.httpclient.impl.completion.support.SlashInsertHandler;
 import org.javamaster.httpclient.model.ParamEnum;
 import org.javamaster.httpclient.psi.*;
-import org.javamaster.httpclient.impl.reference.support.HttpVariableNamePsiReference;
 
 import java.io.File;
 
 /**
  * @author yudong
  */
-public class HttpFilePathCompletionProvider extends CompletionProvider<CompletionParameters> {
+public class HttpFilePathCompletionProvider implements CompletionProvider {
 
     @Override
-    protected void addCompletions(
+    public void addCompletions(
         CompletionParameters parameters,
         ProcessingContext context,
         CompletionResultSet result
@@ -38,7 +39,7 @@ public class HttpFilePathCompletionProvider extends CompletionProvider<Completio
             }
         }
 
-        VirtualFile virtualFile = PsiUtil.getVirtualFile(psiElement);
+        VirtualFile virtualFile = PsiUtilCore.getVirtualFile(psiElement);
         if (virtualFile == null) {
             return;
         }
@@ -50,20 +51,20 @@ public class HttpFilePathCompletionProvider extends CompletionProvider<Completio
                 return;
             }
 
-            var psiFile = PsiUtil.getPsiFile(parentParent.getProject(), virtualFile);
-
-            PsiElement psiDirectory = HttpVariableNamePsiReference.tryResolveVariable(
-                variableName.getName(),
-                variableName.isBuiltin(),
-                psiFile,
-                false
-            );
-
-            if (!(psiDirectory instanceof PsiDirectory)) {
-                return;
-            }
-
-            fillRootPaths((PsiDirectory) psiDirectory, variable.getText(), result);
+            var psiFile = PsiUtilCore.getPsiFile(parentParent.getProject(), virtualFile);
+// TODO !
+//            PsiElement psiDirectory = HttpVariableNamePsiReference.tryResolveVariable(
+//                variableName.getName(),
+//                variableName.isBuiltin(),
+//                psiFile,
+//                false
+//            );
+//
+//            if (!(psiDirectory instanceof PsiDirectory)) {
+//                return;
+//            }
+//
+//            fillRootPaths((PsiDirectory) psiDirectory, variable.getText(), result);
         } else {
             VirtualFile root = virtualFile.getParent();
             if (root == null) {
@@ -90,7 +91,7 @@ public class HttpFilePathCompletionProvider extends CompletionProvider<Completio
 
         String path = prefix.substring(start, end);
 
-        VirtualFile relativeFile = VfsUtil.findFileByIoFile(new File(root.getPath() + path), false);
+        VirtualFile relativeFile = VirtualFileUtil.findFileByIoFile(new File(root.getPath() + path), false);
 
         String prefixPath;
         VirtualFile virtualFile;
@@ -128,7 +129,7 @@ public class HttpFilePathCompletionProvider extends CompletionProvider<Completio
     private void fillRootPaths(VirtualFile root, CompletionResultSet result) {
         int[] num = {0};
 
-        VfsUtil.iterateChildrenRecursively(root, null, fileOrDir -> {
+        VirtualFileUtil.iterateChildrenRecursively(root, null, fileOrDir -> {
             num[0]++;
             String relativize = fileOrDir.getPath().substring(root.getPath().length() + 1);
             if (fileOrDir.isDirectory()) {

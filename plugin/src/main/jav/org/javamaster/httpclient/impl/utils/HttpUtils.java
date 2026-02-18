@@ -902,15 +902,6 @@ public class HttpUtils extends HttpUtilsPart {
         throw new IllegalArgumentException(NlsBundle.message("reqBody.unknown", reqBody.getClass().toString()));
     }
 
-    public static Image pickMethodIcon(String method) {
-        try {
-            HttpRequestEnum methodType = HttpRequestEnum.getInstance(method);
-
-            return methodType.getIcon();
-        } catch (UnsupportedOperationException ignored) {
-            return HttpIcons.FILE;
-        }
-    }
 
     public static PsiElement createGlobalVariableAndInsert(String variableName, String variableValue, Project project) {
         var textEditor = FileEditorManager.getInstance(project).getSelectedTextEditor();

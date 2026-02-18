@@ -14,10 +14,10 @@ import java.util.List;
 /**
  * @author yudong
  */
-public class HttpDirectionNameCompletionProvider extends CompletionProvider<CompletionParameters> {
+public class HttpDirectionNameCompletionProvider implements CompletionProvider {
 
     @Override
-    protected void addCompletions(
+    public void addCompletions(
         CompletionParameters parameters,
         ProcessingContext context,
         CompletionResultSet result

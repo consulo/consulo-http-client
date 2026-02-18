@@ -80,7 +80,7 @@ public class HttpProcessHandler extends BaseProcessHandler {
 
     private HttpDashboardForm httpDashboardForm;
 
-    private final HttpClient.Version version;
+    private final consulo.http.HttpVersion version;
     private WsRequest wsRequest;
     private ServerSocket serverSocket;
 

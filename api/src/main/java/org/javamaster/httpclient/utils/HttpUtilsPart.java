@@ -11,10 +11,13 @@ import consulo.language.psi.util.PsiTreeUtil;
 import consulo.language.util.ModuleUtilCore;
 import consulo.module.Module;
 import consulo.project.Project;
+import consulo.ui.image.Image;
 import consulo.util.lang.Pair;
 import consulo.virtualFileSystem.VirtualFile;
 import consulo.virtualFileSystem.util.VirtualFileUtil;
+import org.javamaster.httpclient.HttpIcons;
 import org.javamaster.httpclient.NlsBundle;
+import org.javamaster.httpclient.model.HttpRequestEnum;
 import org.javamaster.httpclient.parser.HttpFile;
 import org.javamaster.httpclient.psi.HttpComment;
 import org.javamaster.httpclient.psi.HttpMethod;
@@ -23,12 +26,9 @@ import org.javamaster.httpclient.psi.HttpRequestTarget;
 import org.javamaster.httpclient.run.HttpRunConfigurationApi;
 
 import java.io.File;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author VISTALL
@@ -52,6 +52,17 @@ public class HttpUtilsPart {
 
     public static boolean isFileInIdeaDir(VirtualFile virtualFile) {
         return virtualFile != null && virtualFile.getName().startsWith("tmp");
+    }
+
+    public static Image pickMethodIcon(String method) {
+        try {
+            HttpRequestEnum methodType = HttpRequestEnum.getInstance(method);
+
+            return methodType.getIcon();
+        }
+        catch (UnsupportedOperationException ignored) {
+            return HttpIcons.FILE;
+        }
     }
 
     public static Module getOriginalModule(HttpRequestTarget requestTarget) {
@@ -191,43 +202,43 @@ public class HttpUtilsPart {
         return descList;
     }
 
-    public static String getVersionDesc(HttpClient.Version version) {
-        return version == HttpClient.Version.HTTP_1_1 ? "HTTP/1.1" : "HTTP/2";
+    public static String getVersionDesc(consulo.http.HttpVersion version) {
+        return version == consulo.http.HttpVersion.HTTP_1_1 ? "HTTP/1.1" : "HTTP/2";
     }
 
-    public static Pair<HttpRequest.BodyPublisher, Long> convertToReqBodyPublisher(Object reqBody) {
-        if (reqBody == null) {
-            return new Pair<>(HttpRequest.BodyPublishers.noBody(), 0L);
-        }
-
-        long multipartLength = 0L;
-        HttpRequest.BodyPublisher bodyPublisher;
-
-        if (reqBody instanceof String) {
-            bodyPublisher = HttpRequest.BodyPublishers.ofString((String) reqBody);
-        }
-        else if (reqBody instanceof Pair) {
-            @SuppressWarnings("unchecked")
-            Pair<byte[], String> pair = (Pair<byte[], String>) reqBody;
-
-            bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(pair.first);
-        }
-        else if (reqBody instanceof List) {
-            @SuppressWarnings("unchecked")
-            List<Pair<byte[], String>> list = (List<Pair<byte[], String>>) reqBody;
-
-            List<byte[]> byteArrays = list.stream().map(it -> it.first).collect(Collectors.toList());
-
-            bodyPublisher = HttpRequest.BodyPublishers.ofByteArrays(byteArrays);
-
-            multipartLength = byteArrays.stream().mapToLong(it -> it.length).sum();
-        }
-        else {
-            System.err.println(NlsBundle.message("reqBody.unknown", reqBody.getClass().toString()));
-
-            bodyPublisher = HttpRequest.BodyPublishers.noBody();
-        }
-
-        return new Pair<>(bodyPublisher, multipartLength);
-    }
+//    public static Pair<HttpRequest.BodyPublisher, Long> convertToReqBodyPublisher(Object reqBody) {
+//        if (reqBody == null) {
+//            return new Pair<>(HttpRequest.BodyPublishers.noBody(), 0L);
+//        }
+//
+//        long multipartLength = 0L;
+//        HttpRequest.BodyPublisher bodyPublisher;
+//
+//        if (reqBody instanceof String) {
+//            bodyPublisher = HttpRequest.BodyPublishers.ofString((String) reqBody);
+//        }
+//        else if (reqBody instanceof Pair) {
+//            @SuppressWarnings("unchecked")
+//            Pair<byte[], String> pair = (Pair<byte[], String>) reqBody;
+//
+//            bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(pair.first);
+//        }
+//        else if (reqBody instanceof List) {
+//            @SuppressWarnings("unchecked")
+//            List<Pair<byte[], String>> list = (List<Pair<byte[], String>>) reqBody;
+//
+//            List<byte[]> byteArrays = list.stream().map(it -> it.first).collect(Collectors.toList());
+//
+//            bodyPublisher = HttpRequest.BodyPublishers.ofByteArrays(byteArrays);
+//
+//            multipartLength = byteArrays.stream().mapToLong(it -> it.length).sum();
+//        }
+//        else {
+//            System.err.println(NlsBundle.message("reqBody.unknown", reqBody.getClass().toString()));
+//
+//            bodyPublisher = HttpRequest.BodyPublishers.noBody();
+//        }
+//
+//        return new Pair<>(bodyPublisher, multipartLength);
+//    }
 }

@@ -1,29 +1,27 @@
 package org.javamaster.httpclient.impl.usage;
 
+import consulo.annotation.component.ExtensionImpl;
+import consulo.language.Language;
 import consulo.language.findUsage.FindUsagesProvider;
-import consulo.util.lang.StringUtil;
 import consulo.language.psi.PsiElement;
 import consulo.language.psi.PsiNamedElement;
+import consulo.util.lang.StringUtil;
+import jakarta.annotation.Nonnull;
+import org.javamaster.httpclient.HttpLanguage;
 import org.javamaster.httpclient.NlsBundle;
 import org.javamaster.httpclient.psi.HttpGlobalVariableName;
 import org.javamaster.httpclient.psi.HttpVariableName;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * @author yudong
  */
+@ExtensionImpl
 public class HttpFindUsagesProvider implements FindUsagesProvider {
 
     @Override
     public boolean canFindUsagesFor(@NotNull PsiElement psiElement) {
         return psiElement instanceof PsiNamedElement;
-    }
-
-    @Nullable
-    @Override
-    public String getHelpId(@NotNull PsiElement psiElement) {
-        return null;
     }
 
     @NotNull
@@ -66,5 +64,11 @@ public class HttpFindUsagesProvider implements FindUsagesProvider {
         } else {
             return "";
         }
+    }
+
+    @Nonnull
+    @Override
+    public Language getLanguage() {
+        return HttpLanguage.INSTANCE;
     }
 }

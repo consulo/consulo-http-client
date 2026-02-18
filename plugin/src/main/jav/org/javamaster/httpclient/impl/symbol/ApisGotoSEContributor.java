@@ -12,9 +12,9 @@ import consulo.searchEverywhere.SearchEverywhereContributorFactory;
 import consulo.searchEverywhere.SearchEverywhereManager;
 import consulo.ui.ex.action.AnAction;
 import consulo.ui.ex.action.AnActionEvent;
-import org.javamaster.httpclient.model.HttpMethod;
 import org.javamaster.httpclient.impl.psi.impl.RequestNavigationItem;
 import org.javamaster.httpclient.impl.scan.ScanRequest;
+import org.javamaster.httpclient.model.HttpRequestEnum;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
@@ -25,47 +25,48 @@ import java.util.Set;
  * @author yudong
  */
 public class ApisGotoSEContributor extends AbstractGotoSEContributor implements PossibleSlowContributor {
-    private final PersistentSearchEverywhereContributorFilter<HttpMethod> methodFilter;
-    private final Set<HttpMethod> filterMethods = new HashSet<>();
+    private final PersistentSearchEverywhereContributorFilter<HttpRequestEnum> methodFilter;
+    private final Set<HttpRequestEnum> filterMethods = new HashSet<>();
     private final DumbService dumbService;
 
     public ApisGotoSEContributor(AnActionEvent event) {
         super(event);
-        filterMethods.addAll(HttpMethod.getMethods());
+        filterMethods.addAll(HttpRequestEnum.values());
         dumbService = myProject.getService(DumbService.class);
 
         methodFilter = new PersistentSearchEverywhereContributorFilter<>(
-                HttpMethod.getMethods(),
-                new ChooseByNameFilterConfiguration<HttpMethod>() {
-                    @Override
-                    protected String nameForElement(HttpMethod type) {
-                        return type.name();
-                    }
+            HttpRequestEnum.values(),
+            new ChooseByNameFilterConfiguration<HttpRequestEnum>() {
+                @Override
+                protected String nameForElement(HttpRequestEnum type) {
+                    return type.name();
+                }
 
-                    @Override
-                    public boolean isVisible(HttpMethod type) {
-                        return true;
-                    }
+                @Override
+                public boolean isVisible(HttpRequestEnum type) {
+                    return true;
+                }
 
-                    @Override
-                    public void setVisible(HttpMethod type, boolean value) {
-                        if (value) {
-                            filterMethods.add(type);
-                        } else {
-                            filterMethods.remove(type);
-                        }
+                @Override
+                public void setVisible(HttpRequestEnum type, boolean value) {
+                    if (value) {
+                        filterMethods.add(type);
                     }
-                },
-                type -> type.name(),
-                type -> type.getIcon()
+                    else {
+                        filterMethods.remove(type);
+                    }
+                }
+            },
+            type -> type.name(),
+            type -> type.getIcon()
         );
     }
 
     @Override
     public void fetchWeightedElements(
-            @NotNull String pattern,
-            @NotNull ProgressIndicator progressIndicator,
-            @NotNull Processor<? super FoundItemDescriptor<Object>> consumer
+        @NotNull String pattern,
+        @NotNull ProgressIndicator progressIndicator,
+        @NotNull Processor<? super FoundItemDescriptor<Object>> consumer
     ) {
         Runnable fetchRunnable = () -> {
             if (dumbService.isDumb()) {
@@ -79,15 +80,15 @@ public class ApisGotoSEContributor extends AbstractGotoSEContributor implements 
             NameUtil.MinusculeMatcher matcher = NameUtil.buildMatcher("*" + pattern, NameUtil.MatchingCaseSensitivity.NONE);
 
             GlobalSearchScope scope = getScope().getScope() instanceof GlobalSearchScope ?
-                    (GlobalSearchScope) getScope().getScope() :
-                    GlobalSearchScope.projectScope(myProject);
+                (GlobalSearchScope) getScope().getScope() :
+                GlobalSearchScope.projectScope(myProject);
 
             ScanRequest.fetchRequests(myProject, scope, requestInfo -> {
                 progressIndicator.checkCanceled();
 
                 if (requestInfo.getPsiElement() != null &&
-                        filterMethods.contains(requestInfo.getMethod()) &&
-                        matcher.matches(requestInfo.getPath())) {
+                    filterMethods.contains(requestInfo.getMethod()) &&
+                    matcher.matches(requestInfo.getPath())) {
                     consumer.process(new FoundItemDescriptor<>(new RequestNavigationItem(requestInfo), 100));
                 }
             });

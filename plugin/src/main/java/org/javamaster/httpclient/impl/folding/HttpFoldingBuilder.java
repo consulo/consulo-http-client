@@ -14,9 +14,9 @@ import consulo.language.psi.PsiDocumentManager;
 import consulo.language.psi.PsiElement;
 import consulo.language.psi.PsiFile;
 import consulo.language.psi.PsiWhiteSpace;
+import consulo.util.dataholder.Key;
 import jakarta.annotation.Nonnull;
 import org.javamaster.httpclient.HttpLanguage;
-import org.javamaster.httpclient.impl.action.dashboard.view.FoldHeadersAction;
 import org.javamaster.httpclient.psi.HttpHeader;
 import org.javamaster.httpclient.psi.HttpMultipartField;
 import org.javamaster.httpclient.psi.HttpOutputFile;
@@ -29,6 +29,7 @@ import java.util.List;
 
 @ExtensionImpl
 public class HttpFoldingBuilder implements FoldingBuilder, DumbAware {
+    public static final Key<Boolean> httpDashboardFoldHeaderKey = Key.create("org.javamaster.dashboard.httpDashboardFoldHeader");
 
     @RequiredReadAction
     @Nonnull
@@ -113,7 +114,7 @@ public class HttpFoldingBuilder implements FoldingBuilder, DumbAware {
         if (document == null) {
             return true;
         }
-        var foldFlag = document.getUserData(FoldHeadersAction.httpDashboardFoldHeaderKey);
+        var foldFlag = document.getUserData(httpDashboardFoldHeaderKey);
         return foldFlag == null || foldFlag;
     }
 

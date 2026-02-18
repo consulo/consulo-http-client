@@ -1,6 +1,6 @@
 <consulo-plugin>
     <id>consulo.rest.client</id>
-    <name>REST Client</name>
+    <name>Http Client</name>
     <vendor email="375709770@qq.com" url="https://www.zhihu.com/people/liang-yu-dong-44">jufeng98</vendor>
 
     <tags>
@@ -142,9 +142,7 @@
                                   implementation="org.javamaster.httpclient.impl.reference.JsonKeyDubboServiceMethodFieldPsiReferenceContributor"/>
         <lang.documentationProvider language="JSON"
                                     implementationClass="org.javamaster.httpclient.impl.doc.JsonKeyMethodFieldDocumentationProvider"/>
-        <completion.contributor language="http" id="HttpCompletionContributor" order="last"
-                                implementationClass="org.javamaster.httpclient.impl.completion.HttpCompletionContributor"/>
-        <typedHandler implementation="org.javamaster.httpclient.impl.typeHandler.HttpTypedHandler"/>
+
         <braceMatcher filetype="http"
                       implementationClass="org.javamaster.httpclient.impl.braceMatcher.HttpBraceMatcher"/>
         <lang.foldingBuilder language="http"
@@ -174,8 +172,7 @@
         <lang.documentationProvider language="TEXT"
                                     implementationClass="org.javamaster.httpclient.impl.doc.HttpDocumentationProvider"/>
         <searchEverywhereContributor implementation="org.javamaster.httpclient.impl.symbol.ApisGotoSEContributor$Factory"/>
-        <lang.findUsagesProvider language="http"
-                                 implementationClass="org.javamaster.httpclient.impl.usage.HttpFindUsagesProvider"/>
+
         <codeInsight.declarativeInlayProvider language="JAVA"
                                               implementationClass="org.javamaster.httpclient.impl.inlay.UrlInlineHintsProvider"
                                               isEnabledByDefault="true"

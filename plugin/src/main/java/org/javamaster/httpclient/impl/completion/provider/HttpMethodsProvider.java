@@ -1,7 +1,11 @@
 package org.javamaster.httpclient.impl.completion.provider;
 
-import consulo.language.editor.completion.*;
+import consulo.language.editor.completion.CompletionParameters;
+import consulo.language.editor.completion.CompletionProvider;
+import consulo.language.editor.completion.CompletionResultSet;
+import consulo.language.editor.completion.lookup.AddSpaceInsertHandler;
 import consulo.language.editor.completion.lookup.LookupElementBuilder;
+import consulo.language.editor.completion.lookup.PrioritizedLookupElement;
 import consulo.language.psi.PsiElement;
 import consulo.language.psi.PsiErrorElement;
 import consulo.language.util.ProcessingContext;
@@ -11,9 +15,9 @@ import org.javamaster.httpclient.psi.HttpMethod;
 /**
  * @author yudong
  */
-public class HttpMethodsProvider extends CompletionProvider<CompletionParameters> {
+public class HttpMethodsProvider implements CompletionProvider {
     @Override
-    protected void addCompletions(
+    public void addCompletions(
         CompletionParameters parameters,
         ProcessingContext context,
         CompletionResultSet result

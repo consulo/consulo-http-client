@@ -1,7 +1,6 @@
 package org.javamaster.httpclient.impl.reference.support;
 
 import consulo.language.editor.completion.lookup.LookupElementBuilder;
-import consulo.json.psi.JsonProperty;
 import consulo.navigation.ItemPresentation;
 import consulo.project.Project;
 import consulo.document.util.TextRange;
@@ -169,12 +168,12 @@ public class HttpVariableNamePsiReference extends PsiReferenceBase<HttpVariableN
 
         var selectedEnv = HttpEditorTopForm.getSelectedEnv(project);
 
-        var jsonLiteral = EnvFileService.getEnvEleLiteral(variableName, selectedEnv, httpFileParentPath, project);
-
-        var jsonProperty = PsiTreeUtil.getParentOfType(jsonLiteral, JsonProperty.class);
-        if (jsonProperty != null) {
-            return jsonProperty;
-        }
+//        var jsonLiteral = EnvFileService.getEnvEleLiteral(variableName, selectedEnv, httpFileParentPath, project);
+//
+//        var jsonProperty = PsiTreeUtil.getParentOfType(jsonLiteral, JsonProperty.class);
+//        if (jsonProperty != null) {
+//            return jsonProperty;
+//        }
 
         var value = JsHelper.getJsGlobalVariable(variableName);
         if (value != null) {

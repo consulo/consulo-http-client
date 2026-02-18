@@ -1,13 +1,22 @@
 package org.javamaster.httpclient.impl.structure;
 
-import consulo.fileEditor.structureView.*;
-import consulo.fileEditor.structureView.StructureViewModel.ElementInfoProvider;
-import consulo.fileEditor.structureView.StructureViewBuilder;
+import consulo.annotation.component.ExtensionImpl;
 import consulo.codeEditor.Editor;
+import consulo.fileEditor.structureView.StructureViewBuilder;
+import consulo.fileEditor.structureView.StructureViewModel;
+import consulo.fileEditor.structureView.StructureViewModel.ElementInfoProvider;
+import consulo.fileEditor.structureView.StructureViewTreeElement;
+import consulo.fileEditor.structureView.TreeBasedStructureViewBuilder;
+import consulo.language.Language;
+import consulo.language.editor.structureView.PsiStructureViewFactory;
+import consulo.language.editor.structureView.StructureViewModelBase;
 import consulo.language.psi.PsiFile;
+import jakarta.annotation.Nonnull;
+import org.javamaster.httpclient.HttpLanguage;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+@ExtensionImpl
 public class HttpRequestStructureViewFactory implements PsiStructureViewFactory {
 
     @NotNull
@@ -21,6 +30,12 @@ public class HttpRequestStructureViewFactory implements PsiStructureViewFactory 
                 return new HttpClientViewModel(psiFile, editor, root);
             }
         };
+    }
+
+    @Nonnull
+    @Override
+    public Language getLanguage() {
+        return HttpLanguage.INSTANCE;
     }
 
     private static class HttpClientViewModel extends StructureViewModelBase implements ElementInfoProvider {
