@@ -1,10 +1,10 @@
-package consulo.restClient.impl.java.reference;
+package consulo.httpClient.impl.java.reference;
 
 import com.intellij.java.language.psi.PsiMethod;
 import consulo.document.util.TextRange;
 import consulo.language.psi.PsiElement;
 import consulo.language.psi.PsiReferenceBase;
-import consulo.restClient.impl.java.PsiUtils;
+import consulo.httpClient.impl.java.PsiUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

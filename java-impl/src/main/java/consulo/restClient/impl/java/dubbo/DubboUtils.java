@@ -1,4 +1,4 @@
-package consulo.restClient.impl.java.dubbo;
+package consulo.httpClient.impl.java.dubbo;
 
 import com.intellij.java.language.psi.JavaPsiFacade;
 import com.intellij.java.language.psi.PsiClass;

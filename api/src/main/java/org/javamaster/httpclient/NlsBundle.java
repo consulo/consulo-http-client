@@ -2,7 +2,7 @@ package org.javamaster.httpclient;
 
 import consulo.annotation.internal.MigratedExtensionsTo;
 import consulo.application.CommonBundle;
-import consulo.restClient.localize.RestClientLocalize;
+import consulo.httpClient.localize.HttpClientLocalize;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.PropertyKey;
@@ -10,7 +10,7 @@ import org.jetbrains.annotations.PropertyKey;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-@MigratedExtensionsTo(RestClientLocalize.class)
+@MigratedExtensionsTo(HttpClientLocalize.class)
 @Deprecated
 public class NlsBundle {
     public static final NlsBundle INSTANCE = new NlsBundle();

@@ -1,4 +1,4 @@
-package consulo.restClient.impl.java.reference;
+package consulo.httpClient.impl.java.reference;
 
 import com.intellij.java.language.psi.PsiMethod;
 import consulo.language.psi.PsiElement;

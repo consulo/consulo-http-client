@@ -1,4 +1,4 @@
-package consulo.restClient.impl.javascript;
+package consulo.httpClient.impl.javascript;
 
 import consulo.annotation.component.ExtensionImpl;
 import consulo.document.util.TextRange;

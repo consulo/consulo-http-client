@@ -10,7 +10,7 @@
     </parent>
 
     <groupId>consulo.plugin</groupId>
-    <artifactId>consulo.rest.client</artifactId>
+    <artifactId>consulo.http.client</artifactId>
     <version>3-SNAPSHOT</version>
     <packaging>consulo-plugin</packaging>
 
@@ -77,7 +77,7 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>consulo.rest.client.api</artifactId>
+            <artifactId>consulo.http.client.api</artifactId>
             <version>${project.version}</version>
         </dependency>
 

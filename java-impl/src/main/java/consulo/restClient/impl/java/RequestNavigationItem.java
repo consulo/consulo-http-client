@@ -1,4 +1,4 @@
-package consulo.restClient.impl.java;
+package consulo.httpClient.impl.java;
 
 import com.intellij.java.language.psi.PsiMethod;
 import consulo.language.impl.psi.FakePsiElement;

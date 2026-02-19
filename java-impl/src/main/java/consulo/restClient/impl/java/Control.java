@@ -1,4 +1,4 @@
-package consulo.restClient.impl.java;
+package consulo.httpClient.impl.java;
 
 public enum Control {
     Controller("Controller", "org.springframework.stereotype.Controller"),

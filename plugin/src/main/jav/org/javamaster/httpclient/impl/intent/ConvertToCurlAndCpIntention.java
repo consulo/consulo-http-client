@@ -6,7 +6,7 @@ import consulo.language.psi.PsiElement;
 import consulo.language.psi.util.PsiTreeUtil;
 import consulo.localize.LocalizeValue;
 import consulo.project.Project;
-import consulo.restClient.localize.RestClientLocalize;
+import consulo.httpClient.localize.HttpClientLocalize;
 import org.javamaster.httpclient.impl.action.ConvertToCurlAndCpAction;
 import org.javamaster.httpclient.psi.HttpRequestBlock;
 import org.jetbrains.annotations.NotNull;
@@ -19,7 +19,7 @@ public class ConvertToCurlAndCpIntention extends BaseElementAtCaretIntentionActi
     @NotNull
     @Override
     public LocalizeValue getText() {
-        return RestClientLocalize.convertToCurlCp();
+        return HttpClientLocalize.convertToCurlCp();
     }
 
     @Override

@@ -15,6 +15,7 @@ import consulo.language.version.LanguageVersion;
 import jakarta.annotation.Nonnull;
 import org.javamaster.httpclient.HttpLanguage;
 import org.javamaster.httpclient.psi.HttpTypes;
+import org.javamaster.httpclient.psi.impl.HttpTypesFactory;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -57,7 +58,7 @@ public class HttpParserDefinition implements ParserDefinition {
 
     @Override
     public @NotNull PsiElement createElement(ASTNode node) {
-        return HttpTypes.Factory.createElement(node);
+        return HttpTypesFactory.createElement(node);
     }
 
     @Override

@@ -1,4 +1,4 @@
-package consulo.restClient.impl.java.dubbo;
+package consulo.httpClient.impl.java.dubbo;
 
 import com.alibaba.dubbo.config.ApplicationConfig;
 import com.alibaba.dubbo.config.ReferenceConfig;

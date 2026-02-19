@@ -1,4 +1,4 @@
-package consulo.restClient.impl.java.spring;
+package consulo.httpClient.impl.java.spring;
 
 import com.intellij.java.indexing.impl.search.JavaSourceFilterScope;
 import com.intellij.java.indexing.impl.stubs.index.JavaAnnotationIndex;
@@ -6,9 +6,9 @@ import com.intellij.java.language.psi.*;
 import consulo.language.psi.scope.GlobalSearchScope;
 import consulo.language.psi.stub.StubIndex;
 import consulo.project.Project;
-import consulo.restClient.impl.java.AnnoUtils;
+import consulo.httpClient.impl.java.AnnoUtils;
 import org.javamaster.httpclient.model.HttpMethod;
-import consulo.restClient.impl.java.*;
+import consulo.httpClient.impl.java.*;
 
 import java.util.*;
 import java.util.function.Consumer;

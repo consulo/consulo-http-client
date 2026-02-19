@@ -1,4 +1,4 @@
-package consulo.restClient.impl.java;
+package consulo.httpClient.impl.java;
 
 import com.intellij.java.language.psi.*;
 import com.intellij.java.language.psi.javadoc.PsiDocComment;

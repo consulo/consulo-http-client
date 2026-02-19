@@ -1,4 +1,4 @@
-package consulo.restClient;
+package consulo.httpClient;
 
 import consulo.annotation.component.ExtensionImpl;
 import consulo.virtualFileSystem.fileType.FileTypeConsumer;

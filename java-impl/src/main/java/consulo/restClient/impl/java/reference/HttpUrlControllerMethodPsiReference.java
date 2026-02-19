@@ -1,9 +1,9 @@
-package consulo.restClient.impl.java.reference;
+package consulo.httpClient.impl.java.reference;
 
 import consulo.language.util.ModuleUtilCore;
 import consulo.module.Module;
 import consulo.document.util.TextRange;
-import consulo.restClient.impl.java.ScanRequest;
+import consulo.httpClient.impl.java.ScanRequest;
 import consulo.virtualFileSystem.VirtualFile;
 import consulo.language.psi.PsiElement;
 import consulo.language.psi.PsiReferenceBase;

@@ -1,4 +1,4 @@
-package consulo.restClient.impl.java;
+package consulo.httpClient.impl.java;
 
 import com.intellij.java.language.psi.PsiMethod;
 import consulo.application.util.CachedValue;
@@ -8,7 +8,7 @@ import consulo.language.psi.PsiModificationTracker;
 import consulo.language.psi.scope.GlobalSearchScope;
 import consulo.module.Module;
 import consulo.project.Project;
-import consulo.restClient.impl.java.spring.SpringControllerScanService;
+import consulo.httpClient.impl.java.spring.SpringControllerScanService;
 import consulo.util.dataholder.Key;
 
 import java.util.List;

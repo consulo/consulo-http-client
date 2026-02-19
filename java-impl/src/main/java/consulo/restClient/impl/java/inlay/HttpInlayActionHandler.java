@@ -1,4 +1,4 @@
-package consulo.restClient.impl.java.inlay;
+package consulo.httpClient.impl.java.inlay;
 
 import com.intellij.java.language.psi.*;
 import consulo.annotation.component.ExtensionImpl;
@@ -15,10 +15,10 @@ import consulo.language.psi.util.PsiTreeUtil;
 import consulo.language.util.ModuleUtilCore;
 import consulo.module.Module;
 import consulo.project.Project;
-import consulo.restClient.impl.java.JavaHttpUtils;
-import consulo.restClient.impl.java.PsiUtils;
-import consulo.restClient.impl.java.Request;
-import consulo.restClient.impl.java.ScanRequest;
+import consulo.httpClient.impl.java.JavaHttpUtils;
+import consulo.httpClient.impl.java.PsiUtils;
+import consulo.httpClient.impl.java.Request;
+import consulo.httpClient.impl.java.ScanRequest;
 import jakarta.annotation.Nonnull;
 import org.javamaster.httpclient.NlsBundle;
 import org.javamaster.httpclient.model.HttpMethod;

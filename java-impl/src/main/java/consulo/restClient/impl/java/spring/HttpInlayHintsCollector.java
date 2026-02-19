@@ -1,4 +1,4 @@
-package consulo.restClient.impl.java.spring;
+package consulo.httpClient.impl.java.spring;
 
 import com.intellij.java.language.psi.PsiAnnotation;
 import com.intellij.java.language.psi.PsiLiteralExpression;

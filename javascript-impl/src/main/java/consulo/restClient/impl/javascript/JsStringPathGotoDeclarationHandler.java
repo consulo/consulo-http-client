@@ -1,4 +1,4 @@
-package consulo.restClient.impl.javascript;
+package consulo.httpClient.impl.javascript;
 
 import com.intellij.lang.javascript.psi.JSLiteralExpression;
 import consulo.annotation.component.ExtensionImpl;

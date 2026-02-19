@@ -7,7 +7,7 @@ import consulo.language.psi.PsiFile;
 import consulo.language.util.IncorrectOperationException;
 import consulo.localize.LocalizeValue;
 import consulo.project.Project;
-import consulo.restClient.localize.RestClientLocalize;
+import consulo.httpClient.localize.HttpClientLocalize;
 import consulo.ui.ex.popup.JBPopup;
 import consulo.ui.ex.popup.JBPopupFactory;
 import consulo.virtualFileSystem.VirtualFile;
@@ -26,7 +26,7 @@ public class HttpSwitchEnvironmentIntention extends BaseIntentionAction {
     @NotNull
     @Override
     public LocalizeValue getText() {
-        return RestClientLocalize.switchEnvironment();
+        return HttpClientLocalize.switchEnvironment();
     }
 
     @Override

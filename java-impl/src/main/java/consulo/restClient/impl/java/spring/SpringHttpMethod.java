@@ -1,4 +1,4 @@
-package consulo.restClient.impl.java.spring;
+package consulo.httpClient.impl.java.spring;
 
 import org.javamaster.httpclient.model.HttpMethod;
 

@@ -1,5 +1,5 @@
 <consulo-plugin>
-    <id>consulo.rest.client</id>
+    <id>consulo.http.client</id>
     <name>Http Client</name>
     <vendor email="375709770@qq.com" url="https://www.zhihu.com/people/liang-yu-dong-44">jufeng98</vendor>
 

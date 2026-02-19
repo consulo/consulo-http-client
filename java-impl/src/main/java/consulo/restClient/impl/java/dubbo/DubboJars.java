@@ -1,10 +1,10 @@
-package consulo.restClient.impl.java.dubbo;
+package consulo.httpClient.impl.java.dubbo;
 
 import consulo.application.progress.ProgressIndicator;
 import consulo.application.progress.Task;
 import consulo.container.plugin.PluginId;
 import consulo.project.Project;
-import consulo.restClient.impl.java.DubboClassLoader;
+import consulo.httpClient.impl.java.DubboClassLoader;
 import org.javamaster.httpclient.NlsBundle;
 import org.javamaster.httpclient.impl.utils.NotifyUtil;
 import org.javamaster.httpclient.utils.RandomStringUtils;

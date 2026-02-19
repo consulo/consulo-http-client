@@ -37,7 +37,7 @@
     </repositories>
 
     <groupId>consulo.plugin</groupId>
-    <artifactId>consulo.rest.client.parent</artifactId>
+    <artifactId>consulo.http.client.parent</artifactId>
     <version>3-SNAPSHOT</version>
     <packaging>pom</packaging>
 

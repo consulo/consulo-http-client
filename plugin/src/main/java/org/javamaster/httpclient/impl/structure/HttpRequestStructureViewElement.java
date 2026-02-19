@@ -12,7 +12,7 @@ import consulo.language.psi.PsiElement;
 import consulo.language.psi.PsiFile;
 import consulo.platform.base.icon.PlatformIconGroup;
 import consulo.project.Project;
-import consulo.restClient.icon.RestClientIconGroup;
+import consulo.httpClient.icon.HttpClientIconGroup;
 import consulo.ui.ex.ColoredItemPresentation;
 import consulo.ui.image.Image;
 import consulo.util.lang.Pair;
@@ -72,7 +72,7 @@ public class HttpRequestStructureViewElement extends PsiTreeElementBase<PsiEleme
             List<StructureViewTreeElement> children = new ArrayList<>();
             var globalHandler = httpFile.getGlobalHandler();
             if (globalHandler != null) {
-                children.add(create(globalHandler, NlsBundle.message("global.handler"), RestClientIconGroup.playfirst()));
+                children.add(create(globalHandler, NlsBundle.message("global.handler"), HttpClientIconGroup.playfirst()));
             }
 
             var globalVariables = httpFile.getGlobalVariables();
@@ -168,7 +168,7 @@ public class HttpRequestStructureViewElement extends PsiTreeElementBase<PsiEleme
 
         var preRequestHandler = block.getPreRequestHandler();
         if (preRequestHandler != null) {
-            children.add(create(preRequestHandler, NlsBundle.message("pre.handler"), RestClientIconGroup.playfirst()));
+            children.add(create(preRequestHandler, NlsBundle.message("pre.handler"), HttpClientIconGroup.playfirst()));
         }
 
         StringBuilder location = new StringBuilder();
@@ -229,7 +229,7 @@ public class HttpRequestStructureViewElement extends PsiTreeElementBase<PsiEleme
 
         var responseHandler = request.getResponseHandler();
         if (responseHandler != null) {
-            children.add(create(responseHandler, NlsBundle.message("response.handler"), RestClientIconGroup.playfirst()));
+            children.add(create(responseHandler, NlsBundle.message("response.handler"), HttpClientIconGroup.playfirst()));
         }
 
         return children;

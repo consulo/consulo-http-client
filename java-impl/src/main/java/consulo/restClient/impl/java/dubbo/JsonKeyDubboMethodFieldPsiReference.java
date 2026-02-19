@@ -1,4 +1,4 @@
-package consulo.restClient.impl.java.dubbo;
+package consulo.httpClient.impl.java.dubbo;
 
 import consulo.json.psi.JsonStringLiteral;
 import consulo.document.util.TextRange;

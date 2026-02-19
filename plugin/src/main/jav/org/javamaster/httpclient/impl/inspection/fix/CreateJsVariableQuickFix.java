@@ -17,9 +17,8 @@ import consulo.language.psi.util.PsiTreeUtil;
 import consulo.localize.LocalizeValue;
 import consulo.navigation.Navigatable;
 import consulo.project.Project;
-import consulo.restClient.localize.RestClientLocalize;
+import consulo.httpClient.localize.HttpClientLocalize;
 import org.javamaster.httpclient.HttpLanguage;
-import org.javamaster.httpclient.NlsBundle;
 import org.javamaster.httpclient.impl.jsPlugin.JsFacade;
 import org.javamaster.httpclient.parser.HttpFile;
 import org.javamaster.httpclient.psi.*;
@@ -42,8 +41,8 @@ public class CreateJsVariableQuickFix implements LocalQuickFix, PriorityAction {
 
     @Override
     public LocalizeValue getName() {
-        LocalizeValue tip = global ? RestClientLocalize.global() : RestClientLocalize.preRequest();
-        return RestClientLocalize.unsolvedHandlerVariable(tip);
+        LocalizeValue tip = global ? HttpClientLocalize.global() : HttpClientLocalize.preRequest();
+        return HttpClientLocalize.unsolvedHandlerVariable(tip);
     }
 
     @Override
