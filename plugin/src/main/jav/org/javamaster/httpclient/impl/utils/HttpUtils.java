@@ -721,24 +721,6 @@ public class HttpUtils extends HttpUtilsPart {
         return virtualFile != null && virtualFile.getNameWithoutExtension().endsWith("history");
     }
 
-    public static HttpMethod getTargetHttpMethod(String httpFilePath, String runConfigName, Project project) {
-        VirtualFile virtualFile = VirtualFileUtil.findFileByIoFile(new File(httpFilePath), false);
-        if (virtualFile == null) {
-            return null;
-        }
-
-        PsiFile psiFile = PsiUtilCore.getPsiFile(project, virtualFile);
-        Collection<HttpMethod> httpMethods = PsiTreeUtil.findChildrenOfType(psiFile, HttpMethod.class);
-
-        return httpMethods.stream()
-            .filter(it -> {
-                String tabName = getTabName(it);
-                return runConfigName.equals(tabName);
-            })
-            .findFirst()
-            .orElse(null);
-    }
-
     public static LinkedList<String> collectJsonPropertyNameLevels(JsonStringLiteral jsonString) {
         LinkedList<String> beanFieldLevels = new LinkedList<>();
 

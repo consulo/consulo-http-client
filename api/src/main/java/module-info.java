@@ -17,6 +17,7 @@ module consulo.rest.client.api {
     exports org.javamaster.httpclient;
     exports org.javamaster.httpclient.highlighting.support;
     exports org.javamaster.httpclient.map;
+    exports org.javamaster.httpclient.env;
     exports org.javamaster.httpclient.parser;
     exports org.javamaster.httpclient.psi;
     exports org.javamaster.httpclient.psi.impl;

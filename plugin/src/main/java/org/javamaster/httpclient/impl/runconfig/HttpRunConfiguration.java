@@ -1,16 +1,14 @@
 package org.javamaster.httpclient.impl.runconfig;
 
-import consulo.execution.configuration.RunConfiguration;
-import consulo.execution.configuration.RunConfigurationBase;
-import consulo.execution.configuration.RunProfileState;
-import consulo.execution.configuration.RuntimeConfigurationError;
+import consulo.application.ReadAction;
+import consulo.execution.configuration.*;
 import consulo.execution.configuration.ui.SettingsEditor;
 import consulo.execution.executor.Executor;
 import consulo.execution.runner.ExecutionEnvironment;
+import consulo.httpClient.localize.HttpClientLocalize;
 import consulo.project.Project;
-import org.javamaster.httpclient.NlsBundle;
-import org.javamaster.httpclient.impl.utils.HttpUtils;
 import org.javamaster.httpclient.run.HttpRunConfigurationApi;
+import org.javamaster.httpclient.utils.HttpUtilsPart;
 import org.jdom.Element;
 
 /**
@@ -23,14 +21,11 @@ public class HttpRunConfiguration extends RunConfigurationBase implements HttpRu
     private String httpFilePath = "";
     private String env = "";
 
-    public HttpRunConfiguration(
-        Project project,
-        HttpConfigurationFactory httpConfigurationFactory,
-        String name
-    ) {
+    public HttpRunConfiguration(Project project, ConfigurationFactory httpConfigurationFactory, String name) {
         super(project, httpConfigurationFactory, name);
     }
 
+    @Override
     public String getHttpFilePath() {
         return httpFilePath;
     }
@@ -49,8 +44,8 @@ public class HttpRunConfiguration extends RunConfigurationBase implements HttpRu
 
     @Override
     public void checkConfiguration() throws RuntimeConfigurationError {
-        if (HttpUtils.getTargetHttpMethod(httpFilePath, getName(), getProject()) == null) {
-            throw new RuntimeConfigurationError(NlsBundle.message("no.request"));
+        if (ReadAction.compute(() -> HttpUtilsPart.getTargetHttpMethod(httpFilePath, getName(), getProject())) == null) {
+            throw new RuntimeConfigurationError(HttpClientLocalize.noRequest());
         }
     }
 

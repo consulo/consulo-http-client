@@ -2,9 +2,11 @@ package org.javamaster.httpclient.utils;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import consulo.annotation.access.RequiredReadAction;
 import consulo.execution.RunManager;
 import consulo.execution.RunnerAndConfigurationSettings;
 import consulo.language.psi.PsiElement;
+import consulo.language.psi.PsiFile;
 import consulo.language.psi.PsiManager;
 import consulo.language.psi.PsiUtilCore;
 import consulo.language.psi.util.PsiTreeUtil;
@@ -13,6 +15,7 @@ import consulo.module.Module;
 import consulo.project.Project;
 import consulo.ui.image.Image;
 import consulo.util.lang.Pair;
+import consulo.util.lang.StringUtil;
 import consulo.virtualFileSystem.VirtualFile;
 import consulo.virtualFileSystem.util.VirtualFileUtil;
 import org.javamaster.httpclient.HttpIcons;
@@ -27,6 +30,7 @@ import org.javamaster.httpclient.run.HttpRunConfigurationApi;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -63,6 +67,29 @@ public class HttpUtilsPart {
         catch (UnsupportedOperationException ignored) {
             return HttpIcons.FILE;
         }
+    }
+
+    @RequiredReadAction
+    public static HttpMethod getTargetHttpMethod(String httpFilePath, String runConfigName, Project project) {
+        if (StringUtil.isEmptyOrSpaces(httpFilePath)) {
+            return null;
+        }
+
+        VirtualFile virtualFile = VirtualFileUtil.findFileByIoFile(new File(httpFilePath), false);
+        if (virtualFile == null || virtualFile.isDirectory()) {
+            return null;
+        }
+
+        PsiFile psiFile = PsiUtilCore.getPsiFile(project, virtualFile);
+        Collection<HttpMethod> httpMethods = PsiTreeUtil.findChildrenOfType(psiFile, HttpMethod.class);
+
+        return httpMethods.stream()
+            .filter(it -> {
+                String tabName = getTabName(it);
+                return runConfigName.equals(tabName);
+            })
+            .findFirst()
+            .orElse(null);
     }
 
     public static Module getOriginalModule(HttpRequestTarget requestTarget) {

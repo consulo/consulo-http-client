@@ -1,8 +1,8 @@
 package org.javamaster.httpclient.impl.gutter.support;
 
-import consulo.language.editor.gutter.GutterIconNavigationHandler;
-import consulo.execution.runner.ProgramRunner;
 import consulo.codeEditor.EditorGutterComponentEx;
+import consulo.execution.runner.RunnerRegistry;
+import consulo.language.editor.gutter.GutterIconNavigationHandler;
 import consulo.language.psi.PsiElement;
 import org.javamaster.httpclient.impl.dashboard.HttpProgramRunner;
 import org.javamaster.httpclient.psi.HttpMethod;
@@ -25,7 +25,7 @@ public class HttpGutterIconNavigationHandler implements GutterIconNavigationHand
     public void navigate(@NotNull MouseEvent event, @NotNull PsiElement element) {
         EditorGutterComponentEx gutterComponent = (EditorGutterComponentEx) event.getComponent();
 
-        HttpProgramRunner httpProgramRunner = (HttpProgramRunner) ProgramRunner.findRunnerById(HTTP_RUNNER_ID);
+        HttpProgramRunner httpProgramRunner = (HttpProgramRunner) RunnerRegistry.getInstance().findRunnerById(HTTP_RUNNER_ID);
         if (httpProgramRunner == null) {
             return;
         }

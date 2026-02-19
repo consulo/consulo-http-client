@@ -31,11 +31,6 @@ public class HttpSettingsEditor extends SettingsEditor<HttpRunConfiguration> {
         runConfiguration.setHttpFilePath(pair.getSecond());
     }
 
-    @Override
-    public boolean isReadyForApply() {
-        return true;
-    }
-
     @NotNull
     @Override
     protected JComponent createEditor() {

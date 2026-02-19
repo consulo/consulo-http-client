@@ -106,13 +106,9 @@
         <renameHandler implementation="org.javamaster.httpclient.impl.manipulator.HttpRenameHandler"/>
         <renamePsiElementProcessor
                 implementation="org.javamaster.httpclient.impl.manipulator.HttpRenamePsiElementProcessor"/>
-        <configurationType implementation="org.javamaster.httpclient.impl.runconfig.HttpConfigurationType"/>
-        <runDashboardDefaultTypesProvider
-                implementation="org.javamaster.httpclient.impl.dashboard.HttpDashboardDefaultTypesProvider"/>
+
         <runDashboardCustomizer implementation="org.javamaster.httpclient.impl.dashboard.HttpRunDashboardCustomizer"
                                 id="httpRunDashboardCustomizer"/>
-        <executor implementation="org.javamaster.httpclient.impl.dashboard.HttpExecutor" order="first" id="httpExecutor"/>
-        <programRunner implementation="org.javamaster.httpclient.impl.dashboard.HttpProgramRunner"/>
 <!--        <highlightErrorFilter implementation="org.javamaster.httpclient.suppress.MyHighlightErrorFilter"/>-->
 <!--        <lang.inspectionSuppressor language="JSON"-->
 <!--                                   implementationClass="org.javamaster.httpclient.suppress.JsonInspectionSuppressor"/>-->
@@ -151,8 +147,7 @@
                                       implementationClass="org.javamaster.httpclient.impl.structure.HttpRequestStructureViewFactory"/>
         <defaultLiveTemplates file="liveTemplates/request.xml"/>
 
-        <liveTemplateContext baseContextId="REQUEST" contextId="REQUEST_RESPONSE_HANDLER_PATH"
-                             implementation="org.javamaster.httpclient.impl.liveTemplates.HttpJsHandlerTemplateContextType"/>
+
         <liveTemplateContext contextId="HTTP_CLIENT_ENVIRONMENT_INSIDE_ENVIRONMENT"
                              implementation="org.javamaster.httpclient.impl.liveTemplates.HttpEnvFileTemplateContextType"/>
 

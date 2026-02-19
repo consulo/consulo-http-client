@@ -2,7 +2,9 @@ package org.javamaster.httpclient.impl.manipulator;
 
 import consulo.document.util.TextRange;
 import consulo.language.psi.AbstractElementManipulator;
+import jakarta.annotation.Nonnull;
 import org.javamaster.httpclient.factory.HttpPsiFactory;
+import org.javamaster.httpclient.psi.HttpVariable;
 import org.javamaster.httpclient.psi.HttpVariableName;
 import org.jetbrains.annotations.Nullable;
 
@@ -22,11 +24,17 @@ public class HttpVariableNameManipulator extends AbstractElementManipulator<Http
             return null;
         }
 
-        HttpVariableName variable = HttpPsiFactory.createVariable(element.getProject(), "GET {{" + newContent + "}}");
+        HttpVariable variable = HttpPsiFactory.createVariable(element.getProject(), "GET {{" + newContent + "}}");
 
         element.getParent().replace(variable);
 
         return variable.getVariableName();
+    }
+
+    @Nonnull
+    @Override
+    public Class<HttpVariableName> getElementClass() {
+        return HttpVariableName.class;
     }
 
 }

@@ -2,6 +2,7 @@ package org.javamaster.httpclient.impl.manipulator;
 
 import consulo.document.util.TextRange;
 import consulo.language.psi.AbstractElementManipulator;
+import jakarta.annotation.Nonnull;
 import org.javamaster.httpclient.psi.HttpRequestTarget;
 
 public class HttpRequestTargetManipulator extends AbstractElementManipulator<HttpRequestTarget> {
@@ -9,6 +10,12 @@ public class HttpRequestTargetManipulator extends AbstractElementManipulator<Htt
     @Override
     public HttpRequestTarget handleContentChange(HttpRequestTarget element, TextRange range, String newContent) {
         return element;
+    }
+
+    @Nonnull
+    @Override
+    public Class<HttpRequestTarget> getElementClass() {
+        return HttpRequestTarget.class;
     }
 
 }

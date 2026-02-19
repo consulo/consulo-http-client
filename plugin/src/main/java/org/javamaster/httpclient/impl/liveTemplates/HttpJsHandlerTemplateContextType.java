@@ -1,20 +1,23 @@
 package org.javamaster.httpclient.impl.liveTemplates;
 
+import consulo.annotation.component.ExtensionImpl;
+import consulo.language.editor.template.context.BaseTemplateContextType;
 import consulo.language.editor.template.context.TemplateActionContext;
-import consulo.language.editor.template.context.TemplateContextType;
 import consulo.language.inject.InjectedLanguageManager;
 import consulo.language.psi.PsiElement;
 import consulo.language.psi.PsiFile;
+import consulo.localize.LocalizeValue;
 import org.javamaster.httpclient.psi.HttpScriptBody;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * @author yudong
  */
-public class HttpJsHandlerTemplateContextType extends TemplateContextType {
+@ExtensionImpl
+public class HttpJsHandlerTemplateContextType extends BaseTemplateContextType {
 
-    protected HttpJsHandlerTemplateContextType() {
-        super("Http js handler");
+    public HttpJsHandlerTemplateContextType() {
+        super("REQUEST_RESPONSE_HANDLER_PATH", LocalizeValue.localizeTODO("Http js handler"), HttpTemplateContextType.class);
     }
 
     @Override

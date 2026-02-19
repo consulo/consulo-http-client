@@ -1,14 +1,14 @@
 package org.javamaster.httpclient.impl.runconfig;
 
 import consulo.execution.ExecutionResult;
-import consulo.execution.executor.Executor;
 import consulo.execution.configuration.RunProfileState;
+import consulo.execution.executor.Executor;
 import consulo.execution.runner.ExecutionEnvironment;
 import consulo.execution.runner.ProgramRunner;
 import consulo.project.Project;
 import org.javamaster.httpclient.impl.dashboard.HttpExecutionResult;
-import org.javamaster.httpclient.impl.utils.HttpUtils;
 import org.javamaster.httpclient.psi.HttpMethod;
+import org.javamaster.httpclient.utils.HttpUtilsPart;
 
 /**
  * @author yudong
@@ -33,7 +33,7 @@ public class HttpRunProfileState implements RunProfileState {
 
     @Override
     public ExecutionResult execute(Executor executor, ProgramRunner runner) {
-        HttpMethod httpMethod = HttpUtils.getTargetHttpMethod(
+        HttpMethod httpMethod = HttpUtilsPart.getTargetHttpMethod(
             httpFilePath,
             environment.getRunProfile().getName(),
             project

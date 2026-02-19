@@ -1,7 +1,9 @@
 package org.javamaster.httpclient.impl.manipulator;
 
+import consulo.annotation.component.ExtensionImpl;
 import consulo.document.util.TextRange;
 import consulo.language.psi.ElementManipulator;
+import jakarta.annotation.Nonnull;
 import org.javamaster.httpclient.psi.HttpFilePath;
 
 public class HttpFilePathManipulator implements ElementManipulator<HttpFilePath> {
@@ -18,5 +20,11 @@ public class HttpFilePathManipulator implements ElementManipulator<HttpFilePath>
     @Override
     public TextRange getRangeInElement(HttpFilePath element) {
         return element.getTextRange();
+    }
+
+    @Nonnull
+    @Override
+    public Class<HttpFilePath> getElementClass() {
+        return HttpFilePath.class;
     }
 }

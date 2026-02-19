@@ -1,6 +1,7 @@
 package org.javamaster.httpclient.impl.action;
 
 import consulo.dataContext.DataContext;
+import consulo.httpClient.localize.HttpClientLocalize;
 import consulo.language.editor.DaemonCodeAnalyzer;
 import consulo.language.editor.PlatformDataKeys;
 import consulo.ui.ex.action.*;
@@ -25,7 +26,7 @@ public class ChooseEnvironmentAction extends ComboBoxAction {
     private ComboBoxButton comboBoxButton;
     private String selectedEnv;
 
-    public static final String noEnv = NlsBundle.message("no.env");
+    public static final String noEnv = HttpClientLocalize.noEnv().get();
 
     public ChooseEnvironmentAction(VirtualFile file) {
         this.file = file;

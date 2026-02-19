@@ -1,9 +1,8 @@
-package org.javamaster.httpclient.impl.psi.impl;
+package org.javamaster.httpclient.impl.psi;
 
 import consulo.language.impl.ast.FileElement;
 import org.javamaster.httpclient.psi.HttpMyJsonValue;
-import org.javamaster.httpclient.psi.HttpTypes;
-import org.javamaster.httpclient.impl.psi.MyHttpTypes;
+import org.javamaster.httpclient.psi.impl.HttpTypesFactory;
 
 /**
  * @author yudong
@@ -22,6 +21,6 @@ public class TextVariableLazyFileElement extends FileElement {
 
     public static HttpMyJsonValue parse(String value) {
         TextVariableLazyFileElement fileElement = new TextVariableLazyFileElement(value);
-        return (HttpMyJsonValue) HttpTypes.Factory.createElement(fileElement.getFirstChildNode());
+        return (HttpMyJsonValue) HttpTypesFactory.createElement(fileElement.getFirstChildNode());
     }
 }

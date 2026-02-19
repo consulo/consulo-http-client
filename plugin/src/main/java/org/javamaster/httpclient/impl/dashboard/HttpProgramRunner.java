@@ -1,30 +1,33 @@
 package org.javamaster.httpclient.impl.dashboard;
 
-import consulo.execution.executor.ExecutorRegistry;
+import consulo.annotation.component.ExtensionImpl;
+import consulo.codeEditor.EditorGutterComponentEx;
+import consulo.execution.ExecutionManager;
+import consulo.execution.ExecutionResult;
+import consulo.execution.RunnerAndConfigurationSettings;
 import consulo.execution.configuration.RunProfile;
 import consulo.execution.configuration.RunProfileState;
 import consulo.execution.configuration.RunnerSettings;
 import consulo.execution.executor.DefaultRunExecutor;
-import consulo.execution.impl.internal.ExecutionManagerImpl;
 import consulo.execution.runner.ExecutionEnvironment;
 import consulo.execution.runner.GenericProgramRunner;
-import consulo.execution.ui.RunContentBuilder;
+import consulo.execution.runner.RunContentBuilder;
 import consulo.execution.ui.RunContentDescriptor;
-import consulo.codeEditor.EditorGutterComponentEx;
+import consulo.httpClient.localize.HttpClientLocalize;
 import consulo.project.Project;
-import org.javamaster.httpclient.NlsBundle;
-import org.javamaster.httpclient.psi.HttpMethod;
+import consulo.virtualFileSystem.archive.ArchiveFileSystem;
 import org.javamaster.httpclient.impl.runconfig.HttpRunConfiguration;
 import org.javamaster.httpclient.impl.runconfig.HttpRunProfileState;
-import org.javamaster.httpclient.impl.ui.HttpEditorTopForm;
-import org.javamaster.httpclient.impl.utils.HttpUtils;
 import org.javamaster.httpclient.impl.utils.NotifyUtil;
+import org.javamaster.httpclient.psi.HttpMethod;
+import org.javamaster.httpclient.utils.HttpUtilsPart;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 
+@ExtensionImpl
 public class HttpProgramRunner extends GenericProgramRunner<RunnerSettings> {
     public static final String HTTP_RUNNER_ID = "HttpProgramRunner";
 
@@ -42,47 +45,39 @@ public class HttpProgramRunner extends GenericProgramRunner<RunnerSettings> {
     }
 
     public void executeFromGutter(HttpMethod httpMethod, EditorGutterComponentEx gutterComponent) {
-        Runnable loadingRemover = gutterComponent != null ? gutterComponent.setLoadingIconForCurrentGutterMark() : null;
-
         Project project = httpMethod.getProject();
 
-        if (httpMethod.getContainingFile().getVirtualFile().getFileSystem() instanceof JarFileSystem) {
-            NotifyUtil.notifyWarn(project, NlsBundle.message("template.not.execute"));
-            if (loadingRemover != null) {
-                loadingRemover.run();
-            }
+        if (httpMethod.getContainingFile().getVirtualFile().getFileSystem() instanceof ArchiveFileSystem) {
+            NotifyUtil.notifyWarn(project, HttpClientLocalize.templateNotExecute().get());
             return;
         }
 
-        String tabName = HttpUtils.getTabName(httpMethod);
+        String tabName = HttpUtilsPart.getTabName(httpMethod);
 
         try {
             // tabName会用作文件名,因此需要检测下
             Path.of(tabName);
 
             if (tabName.contains("/") || tabName.contains("\\")) {
-                throw new InvalidPathException(tabName, NlsBundle.message("tab.name.error", "Illegal char: / \\"));
+                throw new InvalidPathException(tabName, HttpClientLocalize.tabNameError("Illegal char: / \\").get());
             }
-        } catch (InvalidPathException e) {
-            NotifyUtil.notifyError(project, NlsBundle.message("tab.name.error", e.getMessage()));
-            if (loadingRemover != null) {
-                loadingRemover.run();
-            }
+        }
+        catch (InvalidPathException e) {
+            NotifyUtil.notifyError(project, HttpClientLocalize.tabNameError(e.getMessage()).get());
             return;
         }
 
-        httpMethod.putUserData(HttpUtils.gutterIconLoadingKey, loadingRemover);
-
-        com.intellij.execution.Executor httpExecutor = ExecutorRegistry.getInstance().getExecutorById(HttpExecutor.HTTP_EXECUTOR_ID);
-
-        String selectedEnv = HttpEditorTopForm.getSelectedEnv(httpMethod.getProject());
-
-        com.intellij.execution.RunnerAndConfigurationSettings runnerAndConfigurationSettings =
-            HttpUtils.saveConfiguration(tabName, project, selectedEnv, httpMethod);
-
-        ExecutionEnvironment environment = new ExecutionEnvironment(httpExecutor, this, runnerAndConfigurationSettings, project);
-
-        execute(environment);
+        // TODO !
+//        Executor httpExecutor = ExecutorRegistry.getInstance().getExecutorById(DefaultRunExecutor.EXECUTOR_ID);
+//
+//        String selectedEnv = HttpEditorTopForm.getSelectedEnv(httpMethod.getProject());
+//
+//        RunnerAndConfigurationSettings runnerAndConfigurationSettings =
+//            HttpUtils.saveConfiguration(tabName, project, selectedEnv, httpMethod);
+//
+//        ExecutionEnvironment environment = new ExecutionEnvironment(httpExecutor, this, runnerAndConfigurationSettings, project);
+//
+//        execute(environment);
     }
 
     @Nullable
@@ -92,23 +87,25 @@ public class HttpProgramRunner extends GenericProgramRunner<RunnerSettings> {
             return null;
         }
 
-        com.intellij.execution.RunnerAndConfigurationSettings runnerAndConfigurationSettings =
+        RunnerAndConfigurationSettings runnerAndConfigurationSettings =
             environment.getRunnerAndConfigurationSettings();
         if (runnerAndConfigurationSettings != null) {
             HttpRunConfiguration httpRunConfiguration = (HttpRunConfiguration) runnerAndConfigurationSettings.getConfiguration();
-            HttpEditorTopForm.setCurrentEditorSelectedEnv(
-                httpRunConfiguration.getHttpFilePath(),
-                environment.getProject(),
-                httpRunConfiguration.getEnv()
-            );
+            // TODO !
+            //            HttpEditorTopForm.setCurrentEditorSelectedEnv(
+//                httpRunConfiguration.getHttpFilePath(),
+//                environment.getProject(),
+//                httpRunConfiguration.getEnv()
+//            );
         }
 
         environment.setExecutionId(0);
 
-        com.intellij.execution.ExecutionResult executionResult;
+        ExecutionResult executionResult;
         try {
             executionResult = state.execute(environment.getExecutor(), this);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             return null;
         }
 
@@ -118,11 +115,11 @@ public class HttpProgramRunner extends GenericProgramRunner<RunnerSettings> {
 
         HttpProcessHandler handler = (HttpProcessHandler) executionResult.getProcessHandler();
 
-        RunContentDescriptor contentToReuse = ExecutionManagerImpl.getAllDescriptors(environment.getProject())
+        RunContentDescriptor contentToReuse = ExecutionManager.getInstance(environment.getProject()).getDescriptors(r -> true)
             .stream()
             .filter(it ->
                 it.getProcessHandler() instanceof HttpProcessHandler &&
-                it.getDisplayName().equals(handler.tabName)
+                    it.getDisplayName().equals(handler.tabName)
             )
             .findFirst()
             .orElse(null);

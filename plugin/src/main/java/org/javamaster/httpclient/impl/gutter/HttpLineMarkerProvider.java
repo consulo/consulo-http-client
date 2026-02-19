@@ -16,11 +16,11 @@ import org.javamaster.httpclient.NlsBundle;
 import org.javamaster.httpclient.impl.gutter.support.HttpDiffGutterIconNavigationHandler;
 import org.javamaster.httpclient.impl.gutter.support.HttpGutterIconNavigationHandler;
 import org.javamaster.httpclient.impl.gutter.support.HttpLineMarkerInfo;
-import org.javamaster.httpclient.impl.utils.HttpUtils;
 import org.javamaster.httpclient.psi.HttpHistoryBodyFile;
 import org.javamaster.httpclient.psi.HttpHistoryBodyFileList;
 import org.javamaster.httpclient.psi.HttpMethod;
 import org.javamaster.httpclient.psi.HttpTypes;
+import org.javamaster.httpclient.utils.HttpUtilsPart;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -62,7 +62,7 @@ public class HttpLineMarkerProvider implements LineMarkerProvider {
         }
 
         VirtualFile virtualFile = PsiUtilCore.getVirtualFile(element);
-        if (HttpUtils.isFileInIdeaDir(virtualFile)) {
+        if (HttpUtilsPart.isFileInIdeaDir(virtualFile)) {
             return null;
         }
 
