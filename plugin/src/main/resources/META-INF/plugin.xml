@@ -1,10 +1,10 @@
-<consulo-plugin>
+<consulo-plugin url="https://github.com/consulo/consulo-http-client">
     <id>consulo.http.client</id>
     <name>Http Client</name>
     <vendor email="375709770@qq.com" url="https://www.zhihu.com/people/liang-yu-dong-44">jufeng98</vendor>
 
     <tags>
-        <tag>web.tools</tag>
+        <tag>web.tool</tag>
     </tags>
     
     <description>Provides the ability to edit and execute HTTP requests from the code editor</description>
