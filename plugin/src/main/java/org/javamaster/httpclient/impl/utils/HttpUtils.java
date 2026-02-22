@@ -1,38 +1,36 @@
 package org.javamaster.httpclient.impl.utils;
 
-import com.google.gson.*;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonSyntaxException;
+import consulo.application.Application;
 import consulo.application.util.function.Computable;
 import consulo.document.util.TextRange;
 import consulo.execution.RunManager;
 import consulo.execution.RunnerAndConfigurationSettings;
+import consulo.execution.configuration.ConfigurationType;
 import consulo.fileEditor.FileEditorManager;
+import consulo.httpClient.localize.HttpClientLocalize;
 import consulo.language.editor.WriteCommandAction;
 import consulo.language.editor.refactoring.rename.RenameProcessor;
-import consulo.language.inject.InjectedLanguageManager;
 import consulo.language.psi.*;
-import consulo.language.psi.scope.GlobalSearchScope;
 import consulo.language.psi.util.PsiTreeUtil;
 import consulo.project.Project;
-import consulo.ui.image.Image;
+import consulo.util.collection.ContainerUtil;
 import consulo.util.dataholder.Key;
 import consulo.util.lang.Pair;
+import consulo.util.lang.StringUtil;
 import consulo.util.lang.Trinity;
 import consulo.virtualFileSystem.VirtualFile;
-import consulo.virtualFileSystem.util.VirtualFileUtil;
 import org.apache.http.HttpHeaders;
-import org.apache.http.entity.ContentType;
-import org.javamaster.httpclient.HttpIcons;
 import org.javamaster.httpclient.NlsBundle;
+import org.javamaster.httpclient.env.EnvFileService;
 import org.javamaster.httpclient.factory.HttpPsiFactory;
-import org.javamaster.httpclient.impl.env.EnvFileService;
-import org.javamaster.httpclient.impl.factory.JsonPsiFactory;
-import org.javamaster.httpclient.impl.js.JsExecutor;
 import org.javamaster.httpclient.impl.resolve.VariableResolver;
 import org.javamaster.httpclient.impl.runconfig.HttpConfigurationType;
 import org.javamaster.httpclient.impl.runconfig.HttpRunConfiguration;
 import org.javamaster.httpclient.impl.ui.HttpEditorTopForm;
 import org.javamaster.httpclient.map.LinkedMultiValueMap;
-import org.javamaster.httpclient.model.HttpRequestEnum;
+import org.javamaster.httpclient.model.HttpResponse;
 import org.javamaster.httpclient.model.ParamEnum;
 import org.javamaster.httpclient.model.PreJsFile;
 import org.javamaster.httpclient.model.SimpleTypeEnum;
@@ -40,11 +38,11 @@ import org.javamaster.httpclient.parser.HttpFile;
 import org.javamaster.httpclient.psi.*;
 import org.javamaster.httpclient.utils.HttpUtilsPart;
 
-import javax.swing.*;
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
-import java.net.http.HttpResponse;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -80,13 +78,15 @@ public class HttpUtils extends HttpUtilsPart {
 
         HttpRunConfiguration httpRunConfiguration;
         if (configNotExists) {
-            configurationSettings = runManager.createConfiguration(tabName, HttpConfigurationType.class);
+            HttpConfigurationType type = Application.get().getExtensionPoint(ConfigurationType.class).findExtensionOrFail(HttpConfigurationType.class);
+            configurationSettings = runManager.createRunConfiguration(tabName, type.getConfigurationFactories()[0]);
             httpRunConfiguration = (HttpRunConfiguration) configurationSettings.getConfiguration();
-        } else {
+        }
+        else {
             httpRunConfiguration = (HttpRunConfiguration) configurationSettings.getConfiguration();
         }
 
-        configurationSettings.setActivateToolWindowBeforeRun(false);
+        //configurationSettings.setActivateToolWindowBeforeRun(false);
 
         httpRunConfiguration.setEnv(selectedEnv != null ? selectedEnv : "");
         httpRunConfiguration.setHttpFilePath(httpMethod.getContainingFile().getVirtualFile().getPath());
@@ -100,18 +100,18 @@ public class HttpUtils extends HttpUtilsPart {
         return configurationSettings;
     }
 
-    public static HttpMessageBody getInjectHost(JsonStringLiteral jsonString, Project project) {
-        if (!jsonString.isPropertyName()) {
-            return null;
-        }
-
-        PsiElement injectionHost = InjectedLanguageManager.getInstance(project).getInjectionHost(jsonString);
-        if (!(injectionHost instanceof HttpMessageBody)) {
-            return null;
-        }
-
-        return (HttpMessageBody) injectionHost;
-    }
+//    public static HttpMessageBody getInjectHost(JsonStringLiteral jsonString, Project project) {
+//        if (!jsonString.isPropertyName()) {
+//            return null;
+//        }
+//
+//        PsiElement injectionHost = InjectedLanguageManager.getInstance(project).getInjectionHost(jsonString);
+//        if (!(injectionHost instanceof HttpMessageBody)) {
+//            return null;
+//        }
+//
+//        return (HttpMessageBody) injectionHost;
+//    }
 
     public static LinkedMultiValueMap<String, String> convertToReqHeaderMap(
         List<HttpHeaderField> headerFields,
@@ -163,7 +163,7 @@ public class HttpUtils extends HttpUtilsPart {
         return Arrays.stream(split)
             .map(it -> {
                 String[] list = it.split("=", 2);
-                return UrlEncodingKt.urlEncode(list[0]) + "=" + UrlEncodingKt.urlEncode(list[1]);
+                return URLEncoder.encode(list[0], StandardCharsets.UTF_8) + "=" + URLEncoder.encode(list[1], StandardCharsets.UTF_8);
             })
             .collect(Collectors.joining("&"));
     }
@@ -225,14 +225,14 @@ public class HttpUtils extends HttpUtilsPart {
         HttpRequestMessagesGroup requestMessagesGroup,
         VariableResolver variableResolver,
         HttpHeader header,
-        ContentType contentType,
+        HttpContentType contentType,
         Map<String, String> paramMap
     ) {
         if (requestMessagesGroup == null) {
             return null;
         }
 
-        boolean shouldEncode = contentType == ContentType.APPLICATION_FORM_URLENCODED
+        boolean shouldEncode = contentType != null && "application/x-www-form-urlencoded".equals(contentType.mimeType())
             && paramMap.containsKey(ParamEnum.AUTO_ENCODING.getParam());
 
         String reqStr = null;
@@ -262,11 +262,18 @@ public class HttpUtils extends HttpUtilsPart {
         if (isTxtContentType(header)) {
             if (reqStr == null) {
                 reqStr = "";
-            } else {
+            }
+            else {
                 reqStr += CR_LF;
             }
 
-            String str = VirtualFileUtils.readNewestContent(file);
+            String str = null;
+            try {
+                str = VirtualFileUtils.readNewestContent(file);
+            }
+            catch (IOException e) {
+                throw new RuntimeException(e);
+            }
 
             if (shouldEncode) {
                 str = encodeQueryParam(str);
@@ -275,14 +282,21 @@ public class HttpUtils extends HttpUtilsPart {
             reqStr += variableResolver.resolve(str);
 
             return reqStr;
-        } else {
-            byte[] byteArray = VirtualFileUtils.readNewestBytes(file);
+        }
+        else {
+            byte[] byteArray = new byte[0];
+            try {
+                byteArray = VirtualFileUtils.readNewestBytes(file);
+            }
+            catch (IOException e) {
+                throw new RuntimeException(e);
+            }
 
-            String size = Formats.formatFileSize(byteArray.length);
+            String size = StringUtil.formatFileSize(byteArray.length);
 
-            String desc = NlsBundle.message("binary.body.desc", size, file.getAbsolutePath());
+            String desc = HttpClientLocalize.binaryBodyDesc(size, file.getAbsolutePath()).get();
 
-            return new Pair<>(byteArray, desc);
+            return Pair.create(byteArray, desc);
         }
     }
 
@@ -296,7 +310,7 @@ public class HttpUtils extends HttpUtilsPart {
 
         httpMultipartMessage.getMultipartFieldList().forEach(it -> {
             String lineBoundary = "--" + boundary + CR_LF;
-            byteArrays.add(new Pair<>(lineBoundary.getBytes(), lineBoundary));
+            byteArrays.add(Pair.create(lineBoundary.getBytes(), lineBoundary));
 
             HttpHeader header = it.getHeader();
 
@@ -311,10 +325,10 @@ public class HttpUtils extends HttpUtilsPart {
                     : variableResolver.resolve(headerValue);
 
                 String headerLine = headerName + ": " + value + CR_LF;
-                byteArrays.add(new Pair<>(headerLine.getBytes(StandardCharsets.UTF_8), headerLine));
+                byteArrays.add(Pair.create(headerLine.getBytes(StandardCharsets.UTF_8), headerLine));
             });
 
-            byteArrays.add(new Pair<>(CR_LF.getBytes(StandardCharsets.UTF_8), CR_LF));
+            byteArrays.add(Pair.create(CR_LF.getBytes(StandardCharsets.UTF_8), CR_LF));
 
             Object content = handleOrdinaryContent(
                 it.getRequestMessagesGroup(),
@@ -327,8 +341,9 @@ public class HttpUtils extends HttpUtilsPart {
             if (content instanceof String) {
                 String tmpContent = (String) content + CR_LF;
 
-                byteArrays.add(new Pair<>(tmpContent.getBytes(StandardCharsets.UTF_8), tmpContent));
-            } else if (content instanceof Pair) {
+                byteArrays.add(Pair.create(tmpContent.getBytes(StandardCharsets.UTF_8), tmpContent));
+            }
+            else if (content instanceof Pair) {
                 @SuppressWarnings("unchecked")
                 Pair<byte[], String> pair = (Pair<byte[], String>) content;
 
@@ -340,12 +355,12 @@ public class HttpUtils extends HttpUtilsPart {
                 System.arraycopy(bytes, 0, combined, 0, bytes.length);
                 System.arraycopy(crlfBytes, 0, combined, bytes.length, crlfBytes.length);
 
-                byteArrays.add(new Pair<>(combined, desc + CR_LF));
+                byteArrays.add(Pair.create(combined, desc + CR_LF));
             }
         });
 
         String endBoundary = "--" + boundary + "--";
-        byteArrays.add(new Pair<>(endBoundary.getBytes(StandardCharsets.UTF_8), endBoundary));
+        byteArrays.add(Pair.create(endBoundary.getBytes(StandardCharsets.UTF_8), endBoundary));
 
         return byteArrays;
     }
@@ -382,7 +397,13 @@ public class HttpUtils extends HttpUtilsPart {
 
         reqStr += CR_LF;
 
-        String str = VirtualFileUtils.readNewestContent(file);
+        String str = null;
+        try {
+            str = VirtualFileUtils.readNewestContent(file);
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         reqStr += variableResolver.resolve(str);
 
@@ -417,7 +438,8 @@ public class HttpUtils extends HttpUtilsPart {
 
                 if (raw) {
                     list.add(content + CR_LF);
-                } else {
+                }
+                else {
                     String contentTypeText = header.getContentTypeField() != null
                         && header.getContentTypeField().getHeaderFieldValue() != null
                         ? header.getContentTypeField().getHeaderFieldValue().getText()
@@ -440,7 +462,8 @@ public class HttpUtils extends HttpUtilsPart {
 
                 if (raw) {
                     list.add("< " + file.getAbsolutePath() + CR_LF);
-                } else {
+                }
+                else {
                     String contentTypeText = header.getContentTypeField() != null
                         && header.getContentTypeField().getHeaderFieldValue() != null
                         ? header.getContentTypeField().getHeaderFieldValue().getText()
@@ -458,25 +481,28 @@ public class HttpUtils extends HttpUtilsPart {
         return list;
     }
 
-    public static List<String> convertToResHeaderDescList(HttpResponse<byte[]> response) {
+    public static List<String> convertToResHeaderDescList(org.javamaster.httpclient.model.HttpResponse response) {
         List<String> headerDescList = new ArrayList<>();
-        java.net.http.HttpHeaders headers = response.headers();
-        headers.map().forEach((key, values) -> {
-            values.forEach(value -> {
-                headerDescList.add(key + ": " + value + CR_LF);
-            });
-        });
+        Map<String, List<String>> headers = response.headers();
+        for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
+            for (String value : entry.getValue()) {
+                headerDescList.add(entry.getKey() + ": " + value + CR_LF);
+            }
+        }
 
         headerDescList.add(CR_LF);
 
         return headerDescList;
     }
 
-    public static Trinity<SimpleTypeEnum, byte[], String> convertToResPair(HttpResponse<byte[]> response) {
+    public static Trinity<SimpleTypeEnum, byte[], String> convertToResPair(HttpResponse response) {
         byte[] resBody = response.body();
-        java.net.http.HttpHeaders resHeaders = response.headers();
-        String contentType = resHeaders.firstValue(HttpHeaders.CONTENT_TYPE)
-            .orElse(ContentType.TEXT_PLAIN.getMimeType());
+        Map<String, List<String>> resHeaders = response.headers();
+
+        String contentType = ContainerUtil.getFirstItem(resHeaders.get("Content-Type"));
+        if (contentType == null) {
+            contentType = "text/plain";
+        }
 
         SimpleTypeEnum simpleTypeEnum = SimpleTypeEnum.convertContentType(contentType);
 
@@ -488,7 +514,8 @@ public class HttpUtils extends HttpUtilsPart {
                 String jsonStrPretty = gson.toJson(jsonElement);
 
                 return new Trinity<>(simpleTypeEnum, jsonStrPretty.getBytes(StandardCharsets.UTF_8), contentType);
-            } catch (JsonSyntaxException e) {
+            }
+            catch (JsonSyntaxException e) {
                 return new Trinity<>(simpleTypeEnum, resBody, contentType);
             }
         }
@@ -512,7 +539,8 @@ public class HttpUtils extends HttpUtilsPart {
                 HttpGlobalVariableName globalVariableName = it.getGlobalVariableName();
                 if (globalVariableName.getName().equals(variableName)) {
                     return globalVariableName;
-                } else {
+                }
+                else {
                     return null;
                 }
             })
@@ -534,14 +562,16 @@ public class HttpUtils extends HttpUtilsPart {
                 if (isRequire) {
                     if (excludeRequire) {
                         return null;
-                    } else {
+                    }
+                    else {
                         String urlText = it.getDirectionValue() != null ? it.getDirectionValue().getText() : null;
                         if (urlText == null) {
                             return null;
                         }
                         try {
                             return new PreJsFile(it, new URL(urlText));
-                        } catch (Exception e) {
+                        }
+                        catch (Exception e) {
                             return null;
                         }
                     }
@@ -592,8 +622,8 @@ public class HttpUtils extends HttpUtilsPart {
         HttpDirectionValue directionValue = directionComment.getDirectionValue();
         if (directionValue == null
             || !ParamEnum.isFilePathParam(directionComment.getDirectionName() != null
-                ? directionComment.getDirectionName().getText()
-                : null)) {
+            ? directionComment.getDirectionName().getText()
+            : null)) {
             return null;
         }
 
@@ -668,6 +698,7 @@ public class HttpUtils extends HttpUtilsPart {
         }
         return preRequestHandler.getPreRequestScript().getScriptBody();
     }
+
     public static Pair<String, TextRange> getSearchTxtInfo(HttpRequestTarget requestTarget, String httpFileParentPath) {
         Project project = requestTarget.getProject();
 
@@ -677,7 +708,8 @@ public class HttpUtils extends HttpUtilsPart {
         int bracketIdx = url.indexOf(VARIABLE_SIGN_END);
         if (bracketIdx != -1) {
             start = bracketIdx + 2;
-        } else {
+        }
+        else {
             EnvFileService envFileService = EnvFileService.getService(project);
             String selectedEnv = HttpEditorTopForm.getSelectedEnv(project);
 
@@ -690,12 +722,15 @@ public class HttpUtils extends HttpUtilsPart {
                 uri = new URI(url);
                 if (contextPath != null) {
                     tmpIdx = url.indexOf(contextPath);
-                } else if (contextPathTrim != null) {
+                }
+                else if (contextPathTrim != null) {
                     tmpIdx = url.indexOf(contextPathTrim) + contextPathTrim.length();
-                } else {
+                }
+                else {
                     tmpIdx = url.indexOf(uri.getPath());
                 }
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 return null;
             }
             start = tmpIdx;
@@ -714,137 +749,137 @@ public class HttpUtils extends HttpUtilsPart {
 
         TextRange textRange = new TextRange(start, end);
         String searchTxt = url.substring(start, end);
-        return new Pair<>(searchTxt, textRange);
+        return Pair.create(searchTxt, textRange);
     }
 
     public static boolean isHistoryFile(VirtualFile virtualFile) {
         return virtualFile != null && virtualFile.getNameWithoutExtension().endsWith("history");
     }
 
-    public static LinkedList<String> collectJsonPropertyNameLevels(JsonStringLiteral jsonString) {
-        LinkedList<String> beanFieldLevels = new LinkedList<>();
+//    public static LinkedList<String> collectJsonPropertyNameLevels(JsonStringLiteral jsonString) {
+//        LinkedList<String> beanFieldLevels = new LinkedList<>();
+//
+//        JsonProperty jsonProperty = PsiTreeUtil.getParentOfType(jsonString, JsonProperty.class);
+//        while (jsonProperty != null) {
+//            String propertyName = getJsonPropertyName(jsonProperty);
+//            beanFieldLevels.push(propertyName);
+//            jsonProperty = PsiTreeUtil.getParentOfType(jsonProperty, JsonProperty.class);
+//        }
+//
+//        return beanFieldLevels;
+//    }
 
-        JsonProperty jsonProperty = PsiTreeUtil.getParentOfType(jsonString, JsonProperty.class);
-        while (jsonProperty != null) {
-            String propertyName = getJsonPropertyName(jsonProperty);
-            beanFieldLevels.push(propertyName);
-            jsonProperty = PsiTreeUtil.getParentOfType(jsonProperty, JsonProperty.class);
-        }
-
-        return beanFieldLevels;
-    }
-
-    private static String getJsonPropertyName(JsonProperty jsonProperty) {
-        JsonElement nameElement = jsonProperty.getNameElement();
-        String name = nameElement.getText();
-        return name.substring(1, name.length() - 1);
-    }
-
-    public static PsiParameter resolveTargetParam(PsiMethod psiMethod) {
-        PsiMethod[] superPsiMethods = psiMethod.findSuperMethods(false);
-        PsiParameter[] psiParameters = psiMethod.getParameterList().getParameters();
-        PsiParameter psiParameter = null;
-
-        for (int index = 0; index < psiParameters.length; index++) {
-            PsiParameter psiParam = psiParameters[index];
-            boolean hasAnno = psiParam.hasAnnotation(REQUEST_BODY_ANNO_NAME);
-            if (hasAnno) {
-                psiParameter = psiParam;
-                break;
-            }
-
-            for (PsiMethod superPsiMethod : superPsiMethods) {
-                PsiParameter superPsiParam = superPsiMethod.getParameterList().getParameters()[index];
-                hasAnno = superPsiParam.hasAnnotation(REQUEST_BODY_ANNO_NAME);
-                if (hasAnno) {
-                    psiParameter = psiParam;
-                    break;
-                }
-            }
-        }
-
-        return psiParameter;
-    }
-
-    public static PsiField resolveTargetField(
-        PsiClass paramPsiCls,
-        LinkedList<String> jsonPropertyNameLevels,
-        PsiType[] classGenericParameters
-    ) {
-        PsiField psiField = null;
-
-        try {
-            PsiClass fieldTypeCls;
-            String propertyName = jsonPropertyNameLevels.pop();
-
-            boolean isCollection = InheritanceUtil.isInheritor(paramPsiCls, "java.util.Collection");
-            if (isCollection) {
-                if (classGenericParameters.length == 0) {
-                    return null;
-                }
-
-                // Get the generic parameter type
-                fieldTypeCls = PsiUtils.resolvePsiType(classGenericParameters[0]);
-                if (fieldTypeCls == null) {
-                    return null;
-                }
-            } else {
-                fieldTypeCls = paramPsiCls;
-            }
-
-            while (true) {
-                psiField = fieldTypeCls.findFieldByName(propertyName, true);
-                if (psiField == null) {
-                    return null;
-                }
-
-                if (!(psiField.getType() instanceof PsiClassType)) {
-                    return psiField;
-                }
-
-                PsiClassType psiType = (PsiClassType) psiField.getType();
-
-                PsiType[] parameters = psiType.getParameters();
-                if (parameters.length > 0) {
-                    // Get the generic parameter type
-                    fieldTypeCls = PsiUtils.resolvePsiType(parameters[0]);
-                    if (fieldTypeCls == null) {
-                        return null;
-                    }
-                } else {
-                    PsiClass psiFieldTypeCls = PsiUtils.resolvePsiType(psiType);
-                    if (psiFieldTypeCls == null) {
-                        return null;
-                    }
-
-                    if (psiFieldTypeCls instanceof PsiTypeParameter && classGenericParameters.length > 0) {
-                        // The parameter itself is a generic type, such as T, and the first one is taken directly
-                        PsiClassType genericActualType = (PsiClassType) classGenericParameters[0];
-                        if (genericActualType.getParameters().length > 0) {
-                            PsiClass psiFieldGenericTypeCls = PsiUtils.resolvePsiType(genericActualType.getParameters()[0]);
-                            if (psiFieldGenericTypeCls == null) {
-                                return null;
-                            }
-                            fieldTypeCls = psiFieldGenericTypeCls;
-                        } else {
-                            fieldTypeCls = PsiUtils.resolvePsiType(genericActualType);
-                            if (fieldTypeCls == null) {
-                                return null;
-                            }
-                        }
-                    } else {
-                        fieldTypeCls = psiFieldTypeCls;
-                    }
-                }
-
-                propertyName = jsonPropertyNameLevels.pop();
-            }
-        } catch (NoSuchElementException e) {
-            // End of iteration
-        }
-
-        return psiField;
-    }
+//    private static String getJsonPropertyName(JsonProperty jsonProperty) {
+//        JsonElement nameElement = jsonProperty.getNameElement();
+//        String name = nameElement.getText();
+//        return name.substring(1, name.length() - 1);
+//    }
+//
+//    public static PsiParameter resolveTargetParam(PsiMethod psiMethod) {
+//        PsiMethod[] superPsiMethods = psiMethod.findSuperMethods(false);
+//        PsiParameter[] psiParameters = psiMethod.getParameterList().getParameters();
+//        PsiParameter psiParameter = null;
+//
+//        for (int index = 0; index < psiParameters.length; index++) {
+//            PsiParameter psiParam = psiParameters[index];
+//            boolean hasAnno = psiParam.hasAnnotation(REQUEST_BODY_ANNO_NAME);
+//            if (hasAnno) {
+//                psiParameter = psiParam;
+//                break;
+//            }
+//
+//            for (PsiMethod superPsiMethod : superPsiMethods) {
+//                PsiParameter superPsiParam = superPsiMethod.getParameterList().getParameters()[index];
+//                hasAnno = superPsiParam.hasAnnotation(REQUEST_BODY_ANNO_NAME);
+//                if (hasAnno) {
+//                    psiParameter = psiParam;
+//                    break;
+//                }
+//            }
+//        }
+//
+//        return psiParameter;
+//    }
+//
+//    public static PsiField resolveTargetField(
+//        PsiClass paramPsiCls,
+//        LinkedList<String> jsonPropertyNameLevels,
+//        PsiType[] classGenericParameters
+//    ) {
+//        PsiField psiField = null;
+//
+//        try {
+//            PsiClass fieldTypeCls;
+//            String propertyName = jsonPropertyNameLevels.pop();
+//
+//            boolean isCollection = InheritanceUtil.isInheritor(paramPsiCls, "java.util.Collection");
+//            if (isCollection) {
+//                if (classGenericParameters.length == 0) {
+//                    return null;
+//                }
+//
+//                // Get the generic parameter type
+//                fieldTypeCls = PsiUtils.resolvePsiType(classGenericParameters[0]);
+//                if (fieldTypeCls == null) {
+//                    return null;
+//                }
+//            } else {
+//                fieldTypeCls = paramPsiCls;
+//            }
+//
+//            while (true) {
+//                psiField = fieldTypeCls.findFieldByName(propertyName, true);
+//                if (psiField == null) {
+//                    return null;
+//                }
+//
+//                if (!(psiField.getType() instanceof PsiClassType)) {
+//                    return psiField;
+//                }
+//
+//                PsiClassType psiType = (PsiClassType) psiField.getType();
+//
+//                PsiType[] parameters = psiType.getParameters();
+//                if (parameters.length > 0) {
+//                    // Get the generic parameter type
+//                    fieldTypeCls = PsiUtils.resolvePsiType(parameters[0]);
+//                    if (fieldTypeCls == null) {
+//                        return null;
+//                    }
+//                } else {
+//                    PsiClass psiFieldTypeCls = PsiUtils.resolvePsiType(psiType);
+//                    if (psiFieldTypeCls == null) {
+//                        return null;
+//                    }
+//
+//                    if (psiFieldTypeCls instanceof PsiTypeParameter && classGenericParameters.length > 0) {
+//                        // The parameter itself is a generic type, such as T, and the first one is taken directly
+//                        PsiClassType genericActualType = (PsiClassType) classGenericParameters[0];
+//                        if (genericActualType.getParameters().length > 0) {
+//                            PsiClass psiFieldGenericTypeCls = PsiUtils.resolvePsiType(genericActualType.getParameters()[0]);
+//                            if (psiFieldGenericTypeCls == null) {
+//                                return null;
+//                            }
+//                            fieldTypeCls = psiFieldGenericTypeCls;
+//                        } else {
+//                            fieldTypeCls = PsiUtils.resolvePsiType(genericActualType);
+//                            if (fieldTypeCls == null) {
+//                                return null;
+//                            }
+//                        }
+//                    } else {
+//                        fieldTypeCls = psiFieldTypeCls;
+//                    }
+//                }
+//
+//                propertyName = jsonPropertyNameLevels.pop();
+//            }
+//        } catch (NoSuchElementException e) {
+//            // End of iteration
+//        }
+//
+//        return psiField;
+//    }
 
     public static String convertToJsString(String str) {
         return "`" + str.replace("\\", "\\\\").replace("`", "\\`") + "`";
@@ -901,9 +936,11 @@ public class HttpUtils extends HttpUtilsPart {
         PsiElement elementCopy;
         if (!directionComments.isEmpty()) {
             elementCopy = httpFile.addAfter(newGlobalVariable, directionComments.get(directionComments.size() - 1).getNextSibling());
-        } else if (globalHandler != null) {
+        }
+        else if (globalHandler != null) {
             elementCopy = httpFile.addAfter(newGlobalVariable, globalHandler);
-        } else {
+        }
+        else {
             elementCopy = httpFile.addBefore(newGlobalVariable, httpFile.getFirstChild());
         }
 
@@ -930,7 +967,8 @@ public class HttpUtils extends HttpUtilsPart {
                 PsiElement variable = createGlobalVariableAndInsert(newKey, newValue, project);
 
                 return variable != null;
-            } else {
+            }
+            else {
                 var textEditor = FileEditorManager.getInstance(project).getSelectedTextEditor();
                 if (textEditor == null) {
                     return false;
@@ -950,8 +988,7 @@ public class HttpUtils extends HttpUtilsPart {
 
                 if (!key.equals(newKey)) {
                     RenameProcessor renameProcessor = new RenameProcessor(
-                        project, globalVariable, newKey,
-                        GlobalSearchScope.projectScope(project), false, true
+                        project, globalVariable, newKey, false, true
                     );
                     renameProcessor.run();
                 }
@@ -964,81 +1001,81 @@ public class HttpUtils extends HttpUtilsPart {
             return true;
         });
     }
-
-    public static void modifyJsVariable(String newKey, String newValue) {
-        JsExecutor.setGlobalVariable(newKey, newValue);
-    }
-
-    public static boolean modifyEnvVariable(
-        String key,
-        String newKey,
-        String newValue,
-        boolean add,
-        Project project
-    ) {
-        var triple = HttpEditorTopForm.getTriple(project);
-        if (triple == null) {
-            return false;
-        }
-
-        String selectedEnv = triple.first;
-        String httpFileParentPath = triple.second.getParent().getPath();
-
-        if (add) {
-            JsonProperty jsonProperty = EnvFileService.getEnvJsonProperty(selectedEnv, httpFileParentPath, project);
-            if (jsonProperty == null) {
-                return false;
-            }
-
-            JsonValue jsonValue = jsonProperty.getValue();
-            if (!(jsonValue instanceof JsonObject)) {
-                return false;
-            }
-
-            JsonObject jsonObject = (JsonObject) jsonValue;
-
-            WriteCommandAction.runWriteCommandAction(project, () -> {
-                JsonProperty newProperty = JsonPsiFactory.createStringProperty(project, newKey, newValue);
-                PsiElement newComma = HttpPsiUtils.getNextSiblingByType(newProperty, JsonElementTypes.COMMA, false);
-                List<JsonProperty> propertyList = jsonObject.getPropertyList();
-
-                if (propertyList.isEmpty()) {
-                    jsonObject.addAfter(newProperty, jsonObject.getFirstChild());
-                } else {
-                    PsiElement psiElement = jsonObject.addAfter(newComma, propertyList.get(propertyList.size() - 1));
-                    jsonObject.addAfter(newProperty, psiElement);
-                }
-            });
-        } else {
-            JsonElement jsonLiteral = EnvFileService.getEnvEleLiteral(key, selectedEnv, httpFileParentPath, project);
-            if (jsonLiteral == null) {
-                return false;
-            }
-
-            PsiElement jsonProperty = jsonLiteral.getParent();
-
-            if (!key.equals(newKey)) {
-                RenameProcessor renameProcessor = new RenameProcessor(
-                    project, jsonProperty, newKey,
-                    GlobalSearchScope.projectScope(project), false, true
-                );
-                renameProcessor.run();
-            }
-
-            WriteCommandAction.runWriteCommandAction(project, () -> {
-                JsonProperty newProperty;
-                if (jsonLiteral instanceof JsonNumberLiteral) {
-                    newProperty = JsonPsiFactory.createNumberProperty(project, newKey, newValue);
-                } else if (jsonLiteral instanceof JsonBooleanLiteral) {
-                    newProperty = JsonPsiFactory.createBoolProperty(project, newKey, newValue);
-                } else {
-                    newProperty = JsonPsiFactory.createStringProperty(project, newKey, newValue);
-                }
-
-                jsonProperty.replace(newProperty);
-            });
-        }
-
-        return true;
-    }
+//
+//    public static void modifyJsVariable(String newKey, String newValue) {
+//        JsExecutor.setGlobalVariable(newKey, newValue);
+//    }
+//
+//    public static boolean modifyEnvVariable(
+//        String key,
+//        String newKey,
+//        String newValue,
+//        boolean add,
+//        Project project
+//    ) {
+//        var triple = HttpEditorTopForm.getTriple(project);
+//        if (triple == null) {
+//            return false;
+//        }
+//
+//        String selectedEnv = triple.first;
+//        String httpFileParentPath = triple.second.getParent().getPath();
+//
+//        if (add) {
+//            JsonProperty jsonProperty = EnvFileService.getEnvJsonProperty(selectedEnv, httpFileParentPath, project);
+//            if (jsonProperty == null) {
+//                return false;
+//            }
+//
+//            JsonValue jsonValue = jsonProperty.getValue();
+//            if (!(jsonValue instanceof JsonObject)) {
+//                return false;
+//            }
+//
+//            JsonObject jsonObject = (JsonObject) jsonValue;
+//
+//            WriteCommandAction.runWriteCommandAction(project, () -> {
+//                JsonProperty newProperty = JsonPsiFactory.createStringProperty(project, newKey, newValue);
+//                PsiElement newComma = HttpPsiUtils.getNextSiblingByType(newProperty, JsonElementTypes.COMMA, false);
+//                List<JsonProperty> propertyList = jsonObject.getPropertyList();
+//
+//                if (propertyList.isEmpty()) {
+//                    jsonObject.addAfter(newProperty, jsonObject.getFirstChild());
+//                } else {
+//                    PsiElement psiElement = jsonObject.addAfter(newComma, propertyList.get(propertyList.size() - 1));
+//                    jsonObject.addAfter(newProperty, psiElement);
+//                }
+//            });
+//        } else {
+//            JsonElement jsonLiteral = EnvFileService.getEnvEleLiteral(key, selectedEnv, httpFileParentPath, project);
+//            if (jsonLiteral == null) {
+//                return false;
+//            }
+//
+//            PsiElement jsonProperty = jsonLiteral.getParent();
+//
+//            if (!key.equals(newKey)) {
+//                RenameProcessor renameProcessor = new RenameProcessor(
+//                    project, jsonProperty, newKey,
+//                    GlobalSearchScope.projectScope(project), false, true
+//                );
+//                renameProcessor.run();
+//            }
+//
+//            WriteCommandAction.runWriteCommandAction(project, () -> {
+//                JsonProperty newProperty;
+//                if (jsonLiteral instanceof JsonNumberLiteral) {
+//                    newProperty = JsonPsiFactory.createNumberProperty(project, newKey, newValue);
+//                } else if (jsonLiteral instanceof JsonBooleanLiteral) {
+//                    newProperty = JsonPsiFactory.createBoolProperty(project, newKey, newValue);
+//                } else {
+//                    newProperty = JsonPsiFactory.createStringProperty(project, newKey, newValue);
+//                }
+//
+//                jsonProperty.replace(newProperty);
+//            });
+//        }
+//
+//        return true;
+//    }
 }

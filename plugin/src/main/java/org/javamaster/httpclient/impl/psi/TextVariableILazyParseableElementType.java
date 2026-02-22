@@ -9,7 +9,6 @@ import consulo.language.parser.PsiBuilderFactory;
 import consulo.language.version.LanguageVersionUtil;
 import org.javamaster.httpclient.HttpLanguage;
 import org.javamaster.httpclient._HttpLexer;
-import org.javamaster.httpclient.impl.psi.impl.TextVariableLazyFileElement;
 import org.javamaster.httpclient.parser.HttpAdapter;
 import org.javamaster.httpclient.parser.HttpParser;
 import org.javamaster.httpclient.parser.HttpParserDefinition;

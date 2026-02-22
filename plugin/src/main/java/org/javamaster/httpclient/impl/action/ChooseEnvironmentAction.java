@@ -4,13 +4,13 @@ import consulo.dataContext.DataContext;
 import consulo.httpClient.localize.HttpClientLocalize;
 import consulo.language.editor.DaemonCodeAnalyzer;
 import consulo.language.editor.PlatformDataKeys;
+import consulo.project.Project;
 import consulo.ui.ex.action.*;
 import consulo.ui.ex.awt.action.ComboBoxAction;
-import consulo.ui.ex.awt.action.ComboBoxButton;
+import consulo.ui.ex.awt.action.ComboBoxButtonImpl;
 import consulo.virtualFileSystem.VirtualFile;
 import jakarta.annotation.Nonnull;
-import org.javamaster.httpclient.NlsBundle;
-import org.javamaster.httpclient.impl.env.EnvFileService;
+import org.javamaster.httpclient.env.EnvFileService;
 
 import javax.swing.*;
 import java.awt.*;
@@ -23,10 +23,11 @@ import java.util.Set;
  */
 public class ChooseEnvironmentAction extends ComboBoxAction {
     private final VirtualFile file;
-    private ComboBoxButton comboBoxButton;
+    private ComboBoxButtonImpl comboBoxButton;
     private String selectedEnv;
 
     public static final String noEnv = HttpClientLocalize.noEnv().get();
+    private Presentation myPresentation;
 
     public ChooseEnvironmentAction(VirtualFile file) {
         this.file = file;
@@ -34,10 +35,10 @@ public class ChooseEnvironmentAction extends ComboBoxAction {
 
     @Override
     public JComponent createCustomComponent(Presentation presentation, String place) {
-        ComboBoxButton button = createComboBoxButton(presentation);
+        ComboBoxButtonImpl button = createComboBoxButton(presentation);
         button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
-        JLabel jLabel = new JLabel(NlsBundle.message("env"));
+        JLabel jLabel = new JLabel(HttpClientLocalize.env().get());
         jLabel.setPreferredSize(new Dimension(38, jLabel.getPreferredSize().height));
         jLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
@@ -50,12 +51,16 @@ public class ChooseEnvironmentAction extends ComboBoxAction {
         return panel;
     }
 
+    @Nonnull
     @Override
-    protected ComboBoxButton createComboBoxButton(Presentation presentation) {
-        presentation.setDescription(NlsBundle.message("env.tooltip"));
+    protected ComboBoxButtonImpl createComboBoxButton(Presentation presentation) {
+        myPresentation = presentation;
+
+        presentation.setDescriptionValue(HttpClientLocalize.envTooltip());
+
         presentation.setText(selectedEnv != null ? selectedEnv : noEnv);
 
-        comboBoxButton = super.createComboBoxButton(presentation);
+        comboBoxButton = (ComboBoxButtonImpl) super.createComboBoxButton(presentation);
         comboBoxButton.setBorder(null);
 
         return comboBoxButton;
@@ -64,22 +69,22 @@ public class ChooseEnvironmentAction extends ComboBoxAction {
     @Nonnull
     @Override
     protected ActionGroup createPopupActionGroup(JComponent jComponent) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
-    protected DefaultActionGroup createPopupActionGroup(JComponent button, DataContext dataContext) {
+    protected ActionGroup createPopupActionGroup(JComponent button, DataContext dataContext) {
         var project = dataContext.getData(PlatformDataKeys.PROJECT);
         if (project == null) {
-            return DefaultActionGroup.createPopupGroupWithEmptyText();
+            return ActionGroup.EMPTY_GROUP;
         }
 
         String path = file.getParent() != null ? file.getParent().getPath() : null;
         if (path == null) {
-            return DefaultActionGroup.createPopupGroupWithEmptyText();
+            return ActionGroup.EMPTY_GROUP;
         }
 
-        EnvFileService envFileService = EnvFileService.Companion.getService(project);
+        EnvFileService envFileService = EnvFileService.getService(project);
         Set<String> presetEnvSet = envFileService.getPresetEnvSet(path);
 
         List<String> envList = new ArrayList<>();
@@ -106,7 +111,7 @@ public class ChooseEnvironmentAction extends ComboBoxAction {
         }
 
         if (comboBoxButton != null) {
-            comboBoxButton.getPresentation().setText(selectedEnv != null ? selectedEnv : noEnv);
+            myPresentation.setText(selectedEnv != null ? selectedEnv : noEnv);
         }
     }
 
@@ -122,7 +127,7 @@ public class ChooseEnvironmentAction extends ComboBoxAction {
         public void actionPerformed(AnActionEvent e) {
             setSelectEnv(env);
 
-            DaemonCodeAnalyzer.getInstance(e.getProject()).restart();
+            DaemonCodeAnalyzer.getInstance(e.getData(Project.KEY)).restart();
         }
     }
 }

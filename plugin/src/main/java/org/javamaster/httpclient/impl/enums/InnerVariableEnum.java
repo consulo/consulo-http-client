@@ -1,22 +1,24 @@
 package org.javamaster.httpclient.impl.enums;
 
+import consulo.httpClient.localize.HttpClientLocalize;
 import consulo.language.editor.completion.lookup.InsertHandler;
-import consulo.language.editor.completion.lookup.ParenthesesInsertHandler;
 import consulo.language.editor.completion.lookup.LookupElement;
-import consulo.module.ModuleUtil;
+import consulo.language.editor.completion.lookup.ParenthesesInsertHandler;
+import consulo.platform.Platform;
 import consulo.project.Project;
+import consulo.util.io.StreamUtil;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.javamaster.httpclient.NlsBundle;
 import org.javamaster.httpclient.impl.ui.HttpEditorTopForm;
 import org.javamaster.httpclient.impl.utils.HttpUtils;
-import org.javamaster.httpclient.utils.RandomStringUtils;
-import org.javamaster.httpclient.utils.StreamUtils;
 import org.javamaster.httpclient.impl.utils.VirtualFileUtils;
-import org.mozilla.javascript.Context;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.*;
@@ -300,7 +302,13 @@ public enum InnerVariableEnum {
             String filePath = HttpUtils.constructFilePath(path, httpFileParentPath);
             File file = new File(filePath);
 
-            byte[] bytes = VirtualFileUtils.readNewestBytes(file);
+            byte[] bytes = new byte[0];
+            try {
+                bytes = VirtualFileUtils.readNewestBytes(file);
+            }
+            catch (IOException e) {
+                throw new RuntimeException(e);
+            }
             if (bytes.length == 0) {
                 return "";
             }
@@ -345,7 +353,12 @@ public enum InnerVariableEnum {
             String filePath = HttpUtils.constructFilePath(path, httpFileParentPath);
             File file = new File(filePath);
 
-            return VirtualFileUtils.readNewestContent(file);
+            try {
+                return VirtualFileUtils.readNewestContent(file);
+            }
+            catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         @Override
@@ -353,7 +366,7 @@ public enum InnerVariableEnum {
             return ParenthesesInsertHandler.WITH_PARAMETERS;
         }
     },
-    RANDOM_ADDRESS("$random.address.full") {
+/*    RANDOM_ADDRESS("$random.address.full") {
         @Override
         public String typeText() {
             return NlsBundle.message("address.desc");
@@ -422,7 +435,7 @@ public enum InnerVariableEnum {
     RANDOM_HERO_NAME("$random.hero.name") {
         @Override
         public String typeText() {
-            return NlsBundle.message("hero.desc");
+            return HttpClientLocalize.heroDesc().get();
         }
 
         @Override
@@ -658,7 +671,7 @@ public enum InnerVariableEnum {
         public String exec(String httpFileParentPath, Object... args) {
             return RandomStringUtils.faker().programmingLanguage().name();
         }
-    },
+    },*/
     PICK("$random.pick") {
         @Override
         public String typeText() {
@@ -671,7 +684,7 @@ public enum InnerVariableEnum {
                 throw new IllegalArgumentException(methodName + " must to past arguments." + typeText());
             }
 
-            return args[RandomStringUtils.RANDOM.nextInt(args.length)].toString();
+            return args[RandomUtils.insecure().randomInt(0, args.length)].toString();
         }
 
         @Override
@@ -702,33 +715,33 @@ public enum InnerVariableEnum {
             return ParenthesesInsertHandler.WITH_PARAMETERS;
         }
     },
-    EVAL("$eval") {
-        @Override
-        public String typeText() {
-            return NlsBundle.message("eval.desc", methodName);
-        }
-
-        @Override
-        public String exec(String httpFileParentPath, Object... args) {
-            if (args.length != 1 || !(args[0] instanceof String)) {
-                throw new IllegalArgumentException(methodName + " has wrong arguments." + typeText());
-            }
-
-            Context context = Context.enter();
-            try {
-                org.mozilla.javascript.Scriptable scriptableObject = context.initStandardObjects();
-                Object res = context.evaluateString(scriptableObject, (String) args[0], "dummy.js", 1, null);
-                return res.toString();
-            } finally {
-                Context.exit();
-            }
-        }
-
-        @Override
-        public InsertHandler<LookupElement> insertHandler() {
-            return ParenthesesInsertHandler.WITH_PARAMETERS;
-        }
-    },
+//    EVAL("$eval") {
+//        @Override
+//        public String typeText() {
+//            return NlsBundle.message("eval.desc", methodName);
+//        }
+//
+//        @Override
+//        public String exec(String httpFileParentPath, Object... args) {
+//            if (args.length != 1 || !(args[0] instanceof String)) {
+//                throw new IllegalArgumentException(methodName + " has wrong arguments." + typeText());
+//            }
+//
+//            Context context = Context.enter();
+//            try {
+//                org.mozilla.javascript.Scriptable scriptableObject = context.initStandardObjects();
+//                Object res = context.evaluateString(scriptableObject, (String) args[0], "dummy.js", 1, null);
+//                return res.toString();
+//            } finally {
+//                Context.exit();
+//            }
+//        }
+//
+//        @Override
+//        public InsertHandler<LookupElement> insertHandler() {
+//            return ParenthesesInsertHandler.WITH_PARAMETERS;
+//        }
+//    },
     EXEC("$exec") {
         @Override
         public String typeText() {
@@ -742,7 +755,7 @@ public enum InnerVariableEnum {
             }
 
             String command;
-            if (OS.CURRENT == OS.Windows) {
+            if (Platform.current().os().isWindows()) {
                 command = "cmd /c " + args[0];
             } else {
                 command = (String) args[0];
@@ -752,10 +765,10 @@ public enum InnerVariableEnum {
                 Process process = Runtime.getRuntime().exec(command);
                 process.waitFor(3, TimeUnit.SECONDS);
 
-                String msg = escapeIfNeeded(StreamUtils.copyToStringClose(process.getInputStream(), Charset.forName("GBK")));
+                String msg = escapeIfNeeded(StreamUtil.readText(process.getInputStream(), Charset.forName("GBK")));
 
                 if (msg.isEmpty()) {
-                    msg = StreamUtils.copyToStringClose(process.getErrorStream(), StandardCharsets.UTF_8);
+                    msg = StreamUtil.readText(process.getErrorStream(), StandardCharsets.UTF_8);
                 }
 
                 msg = escapeIfNeeded(msg).substring(1, msg.length() - 1).replace("\\", "\\\\");
@@ -794,7 +807,7 @@ public enum InnerVariableEnum {
                 return null;
             }
 
-            String dirPath = ModuleUtil.getModuleDirPath(module);
+            String dirPath = module.getModuleDirPath();
 
             return dirPath + "/target";
         }
@@ -818,7 +831,7 @@ public enum InnerVariableEnum {
     HISTORY_FOLDER("$historyFolder") {
         @Override
         public String typeText() {
-            return NlsBundle.message("historyFolder.desc");
+            return HttpClientLocalize.historyfolderDesc().get();
         }
 
         @Override
@@ -833,7 +846,7 @@ public enum InnerVariableEnum {
                 return null;
             }
 
-            return basePath + "/.idea/httpClient";
+            return basePath + "/.consulo/httpClient";
         }
     };
 

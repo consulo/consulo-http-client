@@ -1,5 +1,6 @@
 package org.javamaster.httpclient.impl.manipulator;
 
+import consulo.annotation.component.ExtensionImpl;
 import consulo.codeEditor.Editor;
 import consulo.dataContext.DataContext;
 import consulo.language.editor.refactoring.rename.RenameHandler;
@@ -15,6 +16,7 @@ import org.javamaster.httpclient.psi.HttpGlobalVariableName;
 /**
  * @author yudong
  */
+@ExtensionImpl
 public class HttpRenameHandler implements RenameHandler {
 
     @Override

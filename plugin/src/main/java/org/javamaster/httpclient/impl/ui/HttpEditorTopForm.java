@@ -1,7 +1,11 @@
 package org.javamaster.httpclient.impl.ui;
 
+import com.intellij.uiDesigner.core.GridConstraints;
+import com.intellij.uiDesigner.core.GridLayoutManager;
+import com.intellij.uiDesigner.core.Spacer;
 import consulo.fileEditor.FileEditor;
 import consulo.fileEditor.FileEditorManager;
+import consulo.module.Module;
 import consulo.project.Project;
 import consulo.ui.ex.action.ActionGroup;
 import consulo.ui.ex.action.ActionManager;
@@ -39,6 +43,8 @@ public class HttpEditorTopForm extends JComponent {
     public HttpEditorTopForm(VirtualFile file, @Nullable Module module, FileEditor fileEditor) {
         this.file = file;
         this.module = module;
+
+        $$$setupUI$$$();
 
         ActionManager actionManager = ActionManager.getInstance();
 
@@ -109,7 +115,7 @@ public class HttpEditorTopForm extends JComponent {
 
     public static @Nullable HttpEditorTopForm getSelectedEditorTopForm(Project project) {
         FileEditorManager editorManager = FileEditorManager.getInstance(project);
-        FileEditor selectedEditor = ArrayUtil.getFirstElement(editorManager.getSelectedEditor());
+        FileEditor selectedEditor = ArrayUtil.getFirstElement(editorManager.getSelectedEditors());
         if (selectedEditor == null) {
             return null;
         }
@@ -135,5 +141,26 @@ public class HttpEditorTopForm extends JComponent {
         }
 
         httpEditorTopForm.setSelectEnv(env);
+    }
+
+    private void $$$setupUI$$$() {
+        mainPanel = new JPanel();
+        mainPanel.setLayout(new GridLayoutManager(1, 3, new Insets(0, 0, 0, 0), -1, -1));
+        mainPanel.setToolTipText("");
+        final Spacer spacer1 = new Spacer();
+        mainPanel.add(spacer1, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
+        btnLeftPanel = new JPanel();
+        btnLeftPanel.setLayout(new BorderLayout(0, 0));
+        mainPanel.add(btnLeftPanel, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        btnRightPanel = new JPanel();
+        btnRightPanel.setLayout(new BorderLayout(0, 0));
+        mainPanel.add(btnRightPanel, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+    }
+
+    /**
+     * @noinspection ALL
+     */
+    public JComponent $$$getRootComponent$$$() {
+        return mainPanel;
     }
 }

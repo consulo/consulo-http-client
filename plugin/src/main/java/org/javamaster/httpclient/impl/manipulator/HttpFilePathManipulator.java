@@ -6,6 +6,7 @@ import consulo.language.psi.ElementManipulator;
 import jakarta.annotation.Nonnull;
 import org.javamaster.httpclient.psi.HttpFilePath;
 
+@ExtensionImpl
 public class HttpFilePathManipulator implements ElementManipulator<HttpFilePath> {
     @Override
     public HttpFilePath handleContentChange(HttpFilePath element, TextRange range, String newContent) {

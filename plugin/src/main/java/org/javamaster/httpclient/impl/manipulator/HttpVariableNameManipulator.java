@@ -1,5 +1,6 @@
 package org.javamaster.httpclient.impl.manipulator;
 
+import consulo.annotation.component.ExtensionImpl;
 import consulo.document.util.TextRange;
 import consulo.language.psi.AbstractElementManipulator;
 import jakarta.annotation.Nonnull;
@@ -11,6 +12,7 @@ import org.jetbrains.annotations.Nullable;
 /**
  * @author yudong
  */
+@ExtensionImpl
 public class HttpVariableNameManipulator extends AbstractElementManipulator<HttpVariableName> {
 
     @Nullable

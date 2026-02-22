@@ -1,7 +1,9 @@
 package org.javamaster.httpclient.impl.gutter;
 
+import consulo.annotation.access.RequiredReadAction;
 import consulo.annotation.component.ExtensionImpl;
 import consulo.codeEditor.markup.GutterIconRenderer;
+import consulo.httpClient.localize.HttpClientLocalize;
 import consulo.language.Language;
 import consulo.language.ast.IElementType;
 import consulo.language.editor.gutter.LineMarkerInfo;
@@ -12,7 +14,6 @@ import consulo.platform.base.icon.PlatformIconGroup;
 import consulo.virtualFileSystem.VirtualFile;
 import jakarta.annotation.Nonnull;
 import org.javamaster.httpclient.HttpLanguage;
-import org.javamaster.httpclient.NlsBundle;
 import org.javamaster.httpclient.impl.gutter.support.HttpDiffGutterIconNavigationHandler;
 import org.javamaster.httpclient.impl.gutter.support.HttpGutterIconNavigationHandler;
 import org.javamaster.httpclient.impl.gutter.support.HttpLineMarkerInfo;
@@ -32,12 +33,13 @@ import java.util.function.Supplier;
  */
 @ExtensionImpl
 public class HttpLineMarkerProvider implements LineMarkerProvider {
-    private final Function<PsiElement, String> tooltipProvider = (element) -> NlsBundle.message("send.request");
-    private final Supplier<String> accessibleNameProvider = () -> NlsBundle.message("send.request");
-    private final String tip = NlsBundle.message("compare.with") + "...";
+    private final Function<PsiElement, String> tooltipProvider = (element) -> HttpClientLocalize.sendRequest().get();
+    private final Supplier<String> accessibleNameProvider = () -> HttpClientLocalize.sendRequest().get();
+    private final String tip = HttpClientLocalize.compareWith().get() + "...";
     private final Function<PsiElement, String> tooltipCompareProvider = (element) -> tip;
     private final Supplier<String> accessibleNameCompareProvider = () -> tip;
 
+    @RequiredReadAction
     @Nullable
     @Override
     public LineMarkerInfo<PsiElement> getLineMarkerInfo(@NotNull PsiElement element) {

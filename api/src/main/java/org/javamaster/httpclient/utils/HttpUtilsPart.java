@@ -29,6 +29,7 @@ import org.javamaster.httpclient.psi.HttpRequestTarget;
 import org.javamaster.httpclient.run.HttpRunConfigurationApi;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -233,17 +234,18 @@ public class HttpUtilsPart {
         return version == consulo.http.HttpVersion.HTTP_1_1 ? "HTTP/1.1" : "HTTP/2";
     }
 
-//    public static Pair<HttpRequest.BodyPublisher, Long> convertToReqBodyPublisher(Object reqBody) {
-//        if (reqBody == null) {
-//            return new Pair<>(HttpRequest.BodyPublishers.noBody(), 0L);
-//        }
-//
-//        long multipartLength = 0L;
-//        HttpRequest.BodyPublisher bodyPublisher;
-//
-//        if (reqBody instanceof String) {
-//            bodyPublisher = HttpRequest.BodyPublishers.ofString((String) reqBody);
-//        }
+    public static Pair<byte[], Long> convertToReqBodyPublisher(Object reqBody) {
+        if (reqBody == null) {
+            return new Pair<>(null, 0L);
+        }
+
+        long multipartLength = 0L;
+        byte[] bodyPublisher = null;
+
+        if (reqBody instanceof String str) {
+            bodyPublisher = str.getBytes(StandardCharsets.UTF_8);
+        }
+        // TODO !!
 //        else if (reqBody instanceof Pair) {
 //            @SuppressWarnings("unchecked")
 //            Pair<byte[], String> pair = (Pair<byte[], String>) reqBody;
@@ -261,11 +263,11 @@ public class HttpUtilsPart {
 //            multipartLength = byteArrays.stream().mapToLong(it -> it.length).sum();
 //        }
 //        else {
-//            System.err.println(NlsBundle.message("reqBody.unknown", reqBody.getClass().toString()));
+//            System.err.println(HttpClientLocalize.reqbodyUnknown(reqBody.getClass().toString()).get());
 //
 //            bodyPublisher = HttpRequest.BodyPublishers.noBody();
 //        }
-//
-//        return new Pair<>(bodyPublisher, multipartLength);
-//    }
+
+        return new Pair<>(bodyPublisher, multipartLength);
+    }
 }

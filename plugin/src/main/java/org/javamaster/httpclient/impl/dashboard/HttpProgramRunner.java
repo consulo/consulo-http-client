@@ -9,15 +9,20 @@ import consulo.execution.configuration.RunProfile;
 import consulo.execution.configuration.RunProfileState;
 import consulo.execution.configuration.RunnerSettings;
 import consulo.execution.executor.DefaultRunExecutor;
+import consulo.execution.executor.Executor;
+import consulo.execution.executor.ExecutorRegistry;
 import consulo.execution.runner.ExecutionEnvironment;
 import consulo.execution.runner.GenericProgramRunner;
 import consulo.execution.runner.RunContentBuilder;
 import consulo.execution.ui.RunContentDescriptor;
 import consulo.httpClient.localize.HttpClientLocalize;
+import consulo.process.ExecutionException;
 import consulo.project.Project;
 import consulo.virtualFileSystem.archive.ArchiveFileSystem;
 import org.javamaster.httpclient.impl.runconfig.HttpRunConfiguration;
 import org.javamaster.httpclient.impl.runconfig.HttpRunProfileState;
+import org.javamaster.httpclient.impl.ui.HttpEditorTopForm;
+import org.javamaster.httpclient.impl.utils.HttpUtils;
 import org.javamaster.httpclient.impl.utils.NotifyUtil;
 import org.javamaster.httpclient.psi.HttpMethod;
 import org.javamaster.httpclient.utils.HttpUtilsPart;
@@ -67,17 +72,21 @@ public class HttpProgramRunner extends GenericProgramRunner<RunnerSettings> {
             return;
         }
 
-        // TODO !
-//        Executor httpExecutor = ExecutorRegistry.getInstance().getExecutorById(DefaultRunExecutor.EXECUTOR_ID);
-//
-//        String selectedEnv = HttpEditorTopForm.getSelectedEnv(httpMethod.getProject());
-//
-//        RunnerAndConfigurationSettings runnerAndConfigurationSettings =
-//            HttpUtils.saveConfiguration(tabName, project, selectedEnv, httpMethod);
-//
-//        ExecutionEnvironment environment = new ExecutionEnvironment(httpExecutor, this, runnerAndConfigurationSettings, project);
-//
-//        execute(environment);
+        Executor httpExecutor = ExecutorRegistry.getInstance().getExecutorById(DefaultRunExecutor.EXECUTOR_ID);
+
+        String selectedEnv = HttpEditorTopForm.getSelectedEnv(httpMethod.getProject());
+
+        RunnerAndConfigurationSettings runnerAndConfigurationSettings =
+            HttpUtils.saveConfiguration(tabName, project, selectedEnv, httpMethod);
+
+        ExecutionEnvironment environment = new ExecutionEnvironment(httpExecutor, this, runnerAndConfigurationSettings, project);
+
+        try {
+            execute(environment);
+        }
+        catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Nullable
@@ -91,12 +100,11 @@ public class HttpProgramRunner extends GenericProgramRunner<RunnerSettings> {
             environment.getRunnerAndConfigurationSettings();
         if (runnerAndConfigurationSettings != null) {
             HttpRunConfiguration httpRunConfiguration = (HttpRunConfiguration) runnerAndConfigurationSettings.getConfiguration();
-            // TODO !
-            //            HttpEditorTopForm.setCurrentEditorSelectedEnv(
-//                httpRunConfiguration.getHttpFilePath(),
-//                environment.getProject(),
-//                httpRunConfiguration.getEnv()
-//            );
+            HttpEditorTopForm.setCurrentEditorSelectedEnv(
+                httpRunConfiguration.getHttpFilePath(),
+                environment.getProject(),
+                httpRunConfiguration.getEnv()
+            );
         }
 
         environment.setExecutionId(0);

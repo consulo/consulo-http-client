@@ -1,23 +1,24 @@
 package org.javamaster.httpclient.impl.dashboard;
 
+import consulo.annotation.component.ExtensionImpl;
 import consulo.execution.RunnerAndConfigurationSettings;
 import consulo.execution.dashboard.RunDashboardCustomizer;
 import consulo.execution.dashboard.RunDashboardRunConfigurationNode;
 import consulo.execution.ui.RunContentDescriptor;
-import consulo.ui.ex.tree.PresentationData;
 import consulo.language.psi.PsiElement;
 import consulo.ui.ex.SimpleTextAttributes;
+import consulo.ui.ex.tree.PresentationData;
+import consulo.ui.image.Image;
 import org.javamaster.httpclient.impl.runconfig.HttpRunConfiguration;
 import org.javamaster.httpclient.impl.utils.HttpUtils;
 import org.jetbrains.annotations.Nullable;
-
-import javax.swing.*;
 
 /**
  * Support Service tool window double click action, jump to request of the corresponding file.
  *
  * @author yudong
  */
+@ExtensionImpl
 public class HttpRunDashboardCustomizer extends RunDashboardCustomizer {
 
     @Override
@@ -54,7 +55,7 @@ public class HttpRunDashboardCustomizer extends RunDashboardCustomizer {
             return false;
         }
 
-        Icon icon = HttpUtils.pickMethodIcon(processHandler.httpMethod.getText());
+        Image icon = HttpUtils.pickMethodIcon(processHandler.httpMethod.getText());
 
         presentation.setIcon(icon);
 

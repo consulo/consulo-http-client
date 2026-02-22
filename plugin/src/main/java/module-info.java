@@ -9,8 +9,8 @@ module consulo.rest.client {
     requires consulo.execution.api;
     requires consulo.diff.api;
     requires consulo.http.api;
-    
- //   requires consulo.json.api;
+
+    //   requires consulo.json.api;
 
     requires consulo.language.editor.refactoring.api;
     requires consulo.language.impl;

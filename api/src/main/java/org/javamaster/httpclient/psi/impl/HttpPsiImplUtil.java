@@ -6,8 +6,6 @@ import consulo.language.ast.IElementType;
 import consulo.language.psi.PsiElement;
 import consulo.language.psi.PsiReference;
 import consulo.language.psi.ReferenceProvidersRegistry;
-import org.javamaster.httpclient.psi.HttpContentType;
-import org.javamaster.httpclient.psi.HttpVersionEnum;
 import consulo.util.lang.StringUtil;
 import org.javamaster.httpclient.factory.HttpPsiFactory;
 import org.javamaster.httpclient.psi.*;
@@ -20,20 +18,20 @@ import java.util.List;
  */
 public class HttpPsiImplUtil {
 
-    public static HttpVersionEnum getVersion(HttpVersion httpVersion) {
+    public static consulo.http.HttpVersion getVersion(HttpVersion httpVersion) {
         String text = httpVersion.getText();
         if (text.contains("1.1")) {
-            return HttpVersionEnum.HTTP_1_1;
+            return consulo.http.HttpVersion.HTTP_1_1;
         }
         else {
-            return HttpVersionEnum.HTTP_2;
+            return consulo.http.HttpVersion.HTTP_2;
         }
     }
 
-    public static HttpVersionEnum getHttpVersion(HttpRequest request) {
+    public static consulo.http.HttpVersion getHttpVersion(HttpRequest request) {
         HttpVersion version = request.getVersion();
         if (version == null) {
-            return HttpVersionEnum.HTTP_1_1;
+            return consulo.http.HttpVersion.HTTP_1_1;
         }
         return getVersion(version);
     }

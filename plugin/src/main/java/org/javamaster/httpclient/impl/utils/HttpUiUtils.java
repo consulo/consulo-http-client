@@ -3,17 +3,17 @@ package org.javamaster.httpclient.impl.utils;
 import consulo.codeEditor.Editor;
 import consulo.codeEditor.EditorFactory;
 import consulo.codeEditor.EditorSettings;
-import consulo.project.Project;
-import consulo.util.dataholder.UserDataHolderEx;
-import consulo.virtualFileSystem.VirtualFile;
 import consulo.language.psi.PsiDocumentManager;
 import consulo.language.psi.PsiFile;
+import consulo.language.psi.PsiUtilCore;
+import consulo.project.Project;
+import consulo.virtualFileSystem.VirtualFile;
 import org.javamaster.httpclient.impl.action.dashboard.DashboardBaseAction;
+import org.javamaster.httpclient.impl.action.dashboard.ShowLineNumberAction;
 import org.javamaster.httpclient.impl.action.dashboard.SoftWrapAction;
-import org.javamaster.httpclient.impl.action.dashboard.view.FoldHeadersAction;
-import org.javamaster.httpclient.impl.action.dashboard.view.ShowLineNumberAction;
 import org.javamaster.httpclient.model.SimpleTypeEnum;
 
+import java.io.IOException;
 import java.util.List;
 
 public class HttpUiUtils {
@@ -36,26 +36,27 @@ public class HttpUiUtils {
             settings.setUseSoftWraps(SoftWrapAction.reqUseSoftWrap);
             settings.setLineNumbersShown(ShowLineNumberAction.reqShowLineNum);
 
-            FoldHeadersAction.setEditorFoldHeader(FoldHeadersAction.reqFoldHeader, editor);
-            ((UserDataHolderEx) document).putUserData(FoldHeadersAction.httpDashboardFoldHeaderKey, FoldHeadersAction.reqFoldHeader);
-        } else {
+            // TODO FoldHeadersAction.setEditorFoldHeader(FoldHeadersAction.reqFoldHeader, editor);
+            // TODO ((UserDataHolderEx) document).putUserData(FoldHeadersAction.httpDashboardFoldHeaderKey, FoldHeadersAction.reqFoldHeader);
+        }
+        else {
             settings.setUseSoftWraps(SoftWrapAction.resUseSoftWrap);
             settings.setLineNumbersShown(ShowLineNumberAction.resShowLineNum);
 
-            FoldHeadersAction.setEditorFoldHeader(FoldHeadersAction.resFoldHeader, editor);
-            ((UserDataHolderEx) document).putUserData(FoldHeadersAction.httpDashboardFoldHeaderKey, FoldHeadersAction.resFoldHeader);
+            // TODO FoldHeadersAction.setEditorFoldHeader(FoldHeadersAction.resFoldHeader, editor);
+            // TODO ((UserDataHolderEx) document).putUserData(FoldHeadersAction.httpDashboardFoldHeaderKey, FoldHeadersAction.resFoldHeader);
         }
 
         var component = editor.getComponent();
 
-        ((UserDataHolderEx) component).putUserData(DashboardBaseAction.httpDashboardToolbarKey, req);
-        ((UserDataHolderEx) component).putUserData(DashboardBaseAction.httpDashboardResTypeKey, simpleTypeEnum);
+        component.putClientProperty(DashboardBaseAction.httpDashboardToolbarKey, req);
+        component.putClientProperty(DashboardBaseAction.httpDashboardResTypeKey, simpleTypeEnum);
 
         var key = req
             ? DashboardBaseAction.httpDashboardReqEditorKey
             : DashboardBaseAction.httpDashboardResEditorKey;
 
-        ((UserDataHolderEx) component).putUserData(key, editor);
+        component.putClientProperty(key, editor);
 
         return editor;
     }
@@ -68,10 +69,16 @@ public class HttpUiUtils {
         List<Editor> editorList,
         boolean noLog
     ) {
-        VirtualFile virtualFile = VirtualFileUtils.createHttpVirtualFileFromText(bytes, suffix, project, tabName, noLog);
+        VirtualFile virtualFile = null;
+        try {
+            virtualFile = VirtualFileUtils.createHttpVirtualFileFromText(bytes, suffix, project, tabName, noLog);
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         PsiDocumentManager psiDocumentManager = PsiDocumentManager.getInstance(project);
-        PsiFile psiFile = PsiUtil.getPsiFile(project, virtualFile);
+        PsiFile psiFile = PsiUtilCore.getPsiFile(project, virtualFile);
 
         var document = psiDocumentManager.getDocument(psiFile);
 

@@ -1,14 +1,14 @@
 package org.javamaster.httpclient.impl.resolve;
 
-import consulo.project.Project;
 import consulo.language.psi.PsiElement;
 import consulo.language.psi.PsiFile;
 import consulo.language.psi.util.PsiTreeUtil;
+import consulo.project.Project;
+import org.javamaster.httpclient.env.EnvFileService;
 import org.javamaster.httpclient.impl.enums.InnerVariableEnum;
-import org.javamaster.httpclient.impl.env.EnvFileService;
 import org.javamaster.httpclient.impl.js.JsExecutor;
+import org.javamaster.httpclient.impl.psi.TextVariableLazyFileElement;
 import org.javamaster.httpclient.psi.*;
-import org.javamaster.httpclient.impl.psi.impl.TextVariableLazyFileElement;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;

@@ -1,46 +1,45 @@
 package org.javamaster.httpclient.impl.inject;
 
-import consulo.json.lang.JsonLanguage;
+import consulo.annotation.component.ExtensionImpl;
+import consulo.document.util.TextRange;
 import consulo.language.Language;
 import consulo.language.inject.MultiHostInjector;
 import consulo.language.inject.MultiHostRegistrar;
 import consulo.language.plain.PlainTextLanguage;
-import consulo.document.util.TextRange;
-import consulo.virtualFileSystem.VirtualFile;
 import consulo.language.psi.PsiElement;
 import consulo.language.psi.PsiLanguageInjectionHost;
-import consulo.util.collection.SmartList;
+import consulo.language.psi.PsiUtilCore;
 import consulo.util.collection.ContainerUtil;
-import org.apache.http.entity.ContentType;
-import org.javamaster.httpclient.impl.action.dashboard.view.ContentTypeActionGroup;
-import org.javamaster.httpclient.psi.HttpMessageBody;
-import org.javamaster.httpclient.psi.HttpMultipartField;
-import org.javamaster.httpclient.psi.HttpPsiUtils;
-import org.javamaster.httpclient.psi.HttpRequest;
+import consulo.virtualFileSystem.VirtualFile;
+import jakarta.annotation.Nonnull;
+import org.javamaster.httpclient.psi.*;
 import org.javamaster.httpclient.utils.InjectionUtils;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
  * @author yudong
  */
+@ExtensionImpl
 public class MessageBodyInjectionContributor implements MultiHostInjector {
 
     @Override
-    public void getLanguagesToInject(@NotNull MultiHostRegistrar registrar, @NotNull PsiElement context) {
-        VirtualFile virtualFile = PsiUtil.getVirtualFile(context);
+    public void injectLanguages(@NotNull MultiHostRegistrar registrar, @NotNull PsiElement context) {
+        VirtualFile virtualFile = PsiUtilCore.getVirtualFile(context);
         PsiLanguageInjectionHost host = (PsiLanguageInjectionHost) context;
 
-        if (virtualFile != null) {
-            ContentType contentType = virtualFile.getUserData(ContentTypeActionGroup.httpDashboardContentTypeKey);
-            if (contentType != null) {
-                tryInject(contentType, host, registrar);
-                return;
-            }
-        }
+        // TODO
+//        if (virtualFile != null) {
+//            ContentType contentType = virtualFile.getUserData(ContentTypeActionGroup.httpDashboardContentTypeKey);
+//            if (contentType != null) {
+//                tryInject(contentType, host, registrar);
+//                return;
+//            }
+//        }
 
-        ContentType contentType = null;
+        HttpContentType contentType = null;
         PsiElement tmpParent = context.getParent().getParent();
         PsiElement parent = tmpParent != null ? tmpParent.getParent() : null;
         if (parent instanceof HttpRequest) {
@@ -52,16 +51,16 @@ public class MessageBodyInjectionContributor implements MultiHostInjector {
         tryInject(contentType, host, registrar);
     }
 
-    private void tryInject(ContentType contentType, PsiLanguageInjectionHost host, MultiHostRegistrar registrar) {
-        String mimeType = contentType != null ? contentType.getMimeType() : ContentType.TEXT_PLAIN.getMimeType();
+    private void tryInject(HttpContentType contentType, PsiLanguageInjectionHost host, MultiHostRegistrar registrar) {
+        String mimeType = contentType != null ? contentType.mimeType() : "text/plain";
 
-        List<Language> languages = Language.findInstancesByMimeType(mimeType);
+        Collection<Language> languages = Language.findInstancesByMimeType(mimeType);
         Language language = ContainerUtil.getFirstItem(languages);
         if (language == null) {
             language = PlainTextLanguage.INSTANCE;
         }
 
-        if (language == JsonLanguage.INSTANCE) {
+        if ("JSON".equals(language.getID())) {
             registrar.startInjecting(language);
             String text = host.getText();
 
@@ -114,9 +113,9 @@ public class MessageBodyInjectionContributor implements MultiHostInjector {
         return variablesRanges;
     }
 
-    @NotNull
+    @Nonnull
     @Override
-    public List<? extends Class<? extends PsiElement>> elementsToInjectIn() {
-        return new SmartList<>(HttpMessageBody.class);
+    public Class<? extends PsiElement> getElementClass() {
+        return HttpMessageBody.class;
     }
 }

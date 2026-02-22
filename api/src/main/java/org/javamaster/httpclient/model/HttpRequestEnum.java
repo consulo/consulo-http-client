@@ -1,13 +1,19 @@
 package org.javamaster.httpclient.model;
 
 import consulo.application.Application;
-import consulo.application.concurrent.ApplicationConcurrency;
+import consulo.application.progress.ProgressIndicator;
+import consulo.application.progress.Task;
 import consulo.http.HttpMethod;
 import consulo.http.HttpRequestBuilder;
 import consulo.http.HttpRequestBuilderFactory;
+import consulo.http.HttpVersion;
 import consulo.httpClient.localize.HttpClientLocalize;
+import consulo.project.Project;
+import consulo.ui.annotation.RequiredUIAccess;
 import consulo.ui.image.Image;
+import consulo.util.lang.Pair;
 import consulo.util.lang.StringUtil;
+import jakarta.annotation.Nonnull;
 import org.javamaster.httpclient.HttpIcons;
 import org.javamaster.httpclient.map.LinkedMultiValueMap;
 import org.javamaster.httpclient.utils.HttpUtilsPart;
@@ -41,8 +47,9 @@ public enum HttpRequestEnum {
         return icon;
     }
 
-    public CompletableFuture<HttpResponse> execute(String url,
-                                                   consulo.http.HttpVersion version,
+    public CompletableFuture<HttpResponse> execute(Project project,
+                                                   String url,
+                                                   HttpVersion version,
                                                    LinkedMultiValueMap<String, String> reqHttpHeaders,
                                                    Object reqBody,
                                                    List<String> httpReqDescList,
@@ -51,16 +58,24 @@ public enum HttpRequestEnum {
         try {
             Application application = Application.get();
 
+            Pair<byte[], Long> pair = HttpUtilsPart.convertToReqBodyPublisher(reqBody);
+
             HttpRequestBuilderFactory requestBuilderFactory = application.getInstance(HttpRequestBuilderFactory.class);
 
             HttpRequestBuilder builder = requestBuilderFactory.newBuilder(url, myHttpMethod);
+            builder.allowErrorCodes(true);
             builder.version(version);
 
             long connectTimeout = paramMap.containsKey(ParamEnum.CONNECT_TIMEOUT_NAME.getParam())
                 ? Long.parseLong(paramMap.get(ParamEnum.CONNECT_TIMEOUT_NAME.getParam()))
                 : HttpUtilsPart.CONNECT_TIMEOUT;
 
-            builder.connectTimeout((int) connectTimeout);
+            builder.connectTimeout((int) connectTimeout * 1000);
+
+            long readTimeout = paramMap.containsKey(ParamEnum.READ_TIMEOUT_NAME.getParam())
+                ? Long.parseLong(paramMap.get(ParamEnum.READ_TIMEOUT_NAME.getParam()))
+                : HttpUtilsPart.READ_TIMEOUT;
+            builder.connectTimeout((int) readTimeout * 1000);
 
             for (Map.Entry<String, List<String>> entry : reqHttpHeaders.entrySet()) {
                 for (String value : entry.getValue()) {
@@ -76,9 +91,14 @@ public enum HttpRequestEnum {
                 }
             }
 
-           // long tmpLength = bodyPublisher.contentLength();
-            //long contentLength = (tmpLength == -1L) ? multipartLength : tmpLength;
-            long contentLength = 0; // TODO body
+            long multipartLength = 0; // TODO
+
+            long tmpLength = pair.getFirst() == null ? -1 : pair.getFirst().length;
+            long contentLength = tmpLength == -1L ? multipartLength : tmpLength;
+            
+            if (pair.getFirst() != null) {
+                builder.body(pair.getFirst());
+            }
 
             httpReqDescList.add("Content-Length: " + contentLength + HttpUtilsPart.CR_LF);
 
@@ -90,18 +110,31 @@ public enum HttpRequestEnum {
             List<String> descList = HttpUtilsPart.getReqBodyDesc(reqBody);
             httpReqDescList.addAll(descList);
 
-            ApplicationConcurrency concurrency = application.getInstance(ApplicationConcurrency.class);
-
             CompletableFuture<HttpResponse> future = new CompletableFuture<>();
 
-            concurrency.executor().execute(() -> {
-                try {
-                    future.complete(builder.connect(it -> new HttpResponse(it.statusCode(), it.statusMessage(), it.responseHeaders())));
+            new Task.Backgroundable(project, "Calling " + url, true) {
+                @Override
+                public void run(@Nonnull ProgressIndicator progressIndicator) {
+                    progressIndicator.setIndeterminate(true);
+                    
+                    try {
+                        future.complete(builder.connect(it -> {
+                            byte[] body = it.readBytes(null);
+                            return new HttpResponse(it.statusCode(), it.statusMessage(), it.responseHeaders(), it.getURL(), it.version(), body);
+                        }));
+                    }
+                    catch (Throwable e) {
+                        future.completeExceptionally(e);
+                    }
                 }
-                catch (Throwable e) {
-                    future.completeExceptionally(e);
+
+                @RequiredUIAccess
+                @Override
+                public void onCancel() {
+                    future.cancel(false);
                 }
-            });
+            }.queue();
+
             return future;
         }
         catch (Throwable e) {
