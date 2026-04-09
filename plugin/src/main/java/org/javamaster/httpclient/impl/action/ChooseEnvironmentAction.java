@@ -29,7 +29,7 @@ public class ChooseEnvironmentAction extends ComboBoxAction {
     private Presentation myPresentation;
 
     public ChooseEnvironmentAction(VirtualFile file) {
-        this.myFile = file;
+        myFile = file;
     }
 
     @Override
@@ -111,7 +111,7 @@ public class ChooseEnvironmentAction extends ComboBoxAction {
 
         MyAction(Environment env) {
             super(env.displayName());
-            this.myEnv = env;
+            myEnv = env;
         }
 
         @Override
