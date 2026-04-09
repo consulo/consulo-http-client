@@ -12,7 +12,7 @@ import org.jspecify.annotations.Nullable;
 public record Environment(LocalizeValue displayName, @Nullable String value) {
     public static final Environment NO_ENVIRONMENT = new Environment(HttpClientLocalize.noEnv(), null);
 
-    public static Environment of(String env) {
+    public static Environment of(@Nullable String env) {
         if (StringUtil.isEmpty(env)) {
             return NO_ENVIRONMENT;
         }
