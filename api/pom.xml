@@ -63,6 +63,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>consulo.internal</groupId>
+            <artifactId>forms_rt</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>consulo</groupId>
             <artifactId>consulo-language-editor-api</artifactId>
             <version>${project.version}</version>
