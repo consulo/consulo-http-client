@@ -3,7 +3,11 @@
  * @since 2025-07-21
  */
 module consulo.rest.client.api {
-    requires consulo.ide.api;
+    requires transitive consulo.language.api;
+    requires transitive consulo.language.editor.api;
+    requires consulo.language.impl;
+    requires consulo.execution.api;
+    requires consulo.http.api;
 
     requires transitive org.apache.httpcomponents.httpcore;
     requires transitive org.apache.httpcomponents.httpmime;
