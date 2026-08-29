@@ -1,7 +1,6 @@
 package org.javamaster.httpclient.impl.dashboard;
 
 import consulo.annotation.component.ExtensionImpl;
-import consulo.codeEditor.EditorGutterComponentEx;
 import consulo.execution.ExecutionManager;
 import consulo.execution.ExecutionResult;
 import consulo.execution.RunnerAndConfigurationSettings;
@@ -49,7 +48,7 @@ public class HttpProgramRunner extends GenericProgramRunner<RunnerSettings> {
         return DefaultRunExecutor.EXECUTOR_ID.equals(executorId);
     }
 
-    public void executeFromGutter(HttpMethod httpMethod, EditorGutterComponentEx gutterComponent) {
+    public void executeFromGutter(HttpMethod httpMethod) {
         Project project = httpMethod.getProject();
 
         if (httpMethod.getContainingFile().getVirtualFile().getFileSystem() instanceof ArchiveFileSystem) {

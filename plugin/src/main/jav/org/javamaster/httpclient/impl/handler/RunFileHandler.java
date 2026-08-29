@@ -81,7 +81,7 @@ public class RunFileHandler {
                     }
 
                     if (httpProgramRunner != null) {
-                        httpProgramRunner.executeFromGutter(currentMethod, null);
+                        httpProgramRunner.executeFromGutter(currentMethod);
                     }
                 });
 

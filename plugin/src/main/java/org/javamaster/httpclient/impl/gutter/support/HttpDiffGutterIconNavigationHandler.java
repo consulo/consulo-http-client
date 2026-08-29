@@ -14,6 +14,7 @@ import consulo.language.psi.PsiUtilCore;
 import consulo.platform.base.icon.PlatformIconGroup;
 import consulo.project.Project;
 import consulo.ui.ex.awt.JBLabel;
+import consulo.ui.event.ComponentEvent;
 import consulo.ui.ex.popup.JBPopupFactory;
 import consulo.virtualFileSystem.VirtualFile;
 import consulo.virtualFileSystem.util.VirtualFileUtil;
@@ -23,7 +24,6 @@ import org.javamaster.httpclient.psi.HttpHistoryBodyFileList;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -40,7 +40,7 @@ public class HttpDiffGutterIconNavigationHandler implements GutterIconNavigation
     }
 
     @Override
-    public void navigate(@NotNull MouseEvent event, @NotNull PsiElement element) {
+    public void navigate(@NotNull ComponentEvent<?> event, @NotNull PsiElement element) {
         Project project = element.getProject();
         VirtualFile editorVirtualFile = PsiUtilCore.getVirtualFile(element);
         if (editorVirtualFile == null) {
@@ -114,7 +114,7 @@ public class HttpDiffGutterIconNavigationHandler implements GutterIconNavigation
                     DiffManager.getInstance().showDiff(project, request);
                 })
                 .createPopup()
-                .showInScreenCoordinates(event.getComponent(), event.getLocationOnScreen());
+                .showBy(event);
     }
 
     private static class Pair {
