@@ -96,7 +96,8 @@ public enum HttpRequestEnum {
             long tmpLength = pair.getFirst() == null ? -1 : pair.getFirst().length;
             long contentLength = tmpLength == -1L ? multipartLength : tmpLength;
             
-            if (pair.getFirst() != null) {
+            // do not pass empty body - HttpURLConnection silently switches GET to POST when output is requested
+            if (pair.getFirst() != null && pair.getFirst().length > 0) {
                 builder.body(pair.getFirst());
             }
 
