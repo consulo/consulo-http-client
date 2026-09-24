@@ -123,7 +123,7 @@ public class HttpUtilsPart {
     public static String getTabName(HttpMethod httpMethod) {
         HttpRequestBlock requestBlock = PsiTreeUtil.getParentOfType(httpMethod, HttpRequestBlock.class);
         if (requestBlock == null) {
-            return "HTTP Request ▏#0";
+            return "HTTP Request #0";
         }
 
         HttpComment comment = requestBlock.getComment();
@@ -140,11 +140,11 @@ public class HttpUtilsPart {
 
         for (int index = 0; index < requestBlocks.size(); index++) {
             if (requestBlock.equals(requestBlocks.get(index))) {
-                return "HTTP Request ▏#" + (index + 1);
+                return "HTTP Request #" + (index + 1);
             }
         }
 
-        return "HTTP Request ▏#0";
+        return "HTTP Request #0";
     }
 
     public static VirtualFile getOriginalFile(Project project, String tabName) {
