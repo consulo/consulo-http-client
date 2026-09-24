@@ -75,7 +75,7 @@ public enum HttpRequestEnum {
             long readTimeout = paramMap.containsKey(ParamEnum.READ_TIMEOUT_NAME.getParam())
                 ? Long.parseLong(paramMap.get(ParamEnum.READ_TIMEOUT_NAME.getParam()))
                 : HttpUtilsPart.READ_TIMEOUT;
-            builder.connectTimeout((int) readTimeout * 1000);
+            builder.readTimeout((int) readTimeout * 1000);
 
             for (Map.Entry<String, List<String>> entry : reqHttpHeaders.entrySet()) {
                 for (String value : entry.getValue()) {
@@ -96,7 +96,7 @@ public enum HttpRequestEnum {
             long tmpLength = pair.getFirst() == null ? -1 : pair.getFirst().length;
             long contentLength = tmpLength == -1L ? multipartLength : tmpLength;
             
-            if (pair.getFirst() != null) {
+            if (pair.getFirst() != null && pair.getFirst().length > 0) {
                 builder.body(pair.getFirst());
             }
 
