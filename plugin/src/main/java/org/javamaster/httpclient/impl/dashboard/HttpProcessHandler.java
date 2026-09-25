@@ -2,8 +2,6 @@ package org.javamaster.httpclient.impl.dashboard;
 
 import consulo.annotation.access.RequiredReadAction;
 import consulo.application.Application;
-import consulo.disposer.Disposable;
-import consulo.disposer.Disposer;
 import consulo.httpClient.localize.HttpClientLocalize;
 import consulo.language.psi.util.PsiTreeUtil;
 import consulo.localize.LocalizeValue;
@@ -11,9 +9,9 @@ import consulo.process.BaseProcessHandler;
 import consulo.project.Project;
 import consulo.project.ui.wm.ToolWindowId;
 import consulo.project.ui.wm.ToolWindowManager;
+import consulo.ui.Component;
 import consulo.ui.NotificationType;
-import consulo.ui.ex.content.Content;
-import consulo.ui.ex.toolWindow.ToolWindow;
+import consulo.ui.annotation.RequiredUIAccess;
 import consulo.util.lang.StringUtil;
 import consulo.util.lang.Trinity;
 import consulo.virtualFileSystem.VirtualFileManager;
@@ -32,7 +30,6 @@ import org.javamaster.httpclient.psi.*;
 import org.javamaster.httpclient.utils.HttpUtilsPart;
 import org.jspecify.annotations.Nullable;
 
-import javax.swing.*;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.OutputStream;
@@ -106,11 +103,12 @@ public class HttpProcessHandler extends BaseProcessHandler {
         this.version = httpVersion != null ? httpVersion.getVersion() : consulo.http.HttpVersion.HTTP_1_1;
     }
 
-    public JPanel getComponent() {
+    @RequiredUIAccess
+    public Component getUIComponent() {
         if (httpDashboardForm == null) {
             httpDashboardForm = new HttpDashboardForm(tabName, project);
         }
-        return httpDashboardForm.getMainPanel();
+        return httpDashboardForm.getUIComponent();
     }
 
     @Override
@@ -646,23 +644,6 @@ public class HttpProcessHandler extends BaseProcessHandler {
         }
 
         ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(project);
-        ToolWindow toolWindow = toolWindowManager.getToolWindow(ToolWindowId.SERVICES);
-
-        if (toolWindow != null) {
-            Content content = toolWindow.getContentManager().getContent(getComponent());
-            if (content != null) {
-                if (httpDashboardForm == null) {
-                    httpDashboardForm = new HttpDashboardForm(tabName, project);
-                }
-                content.setDisposer(httpDashboardForm);
-            }
-            else {
-                if (httpDashboardForm == null) {
-                    httpDashboardForm = new HttpDashboardForm(tabName, project);
-                }
-                Disposer.register(Disposable.newDisposable(), httpDashboardForm);
-            }
-        }
 
         if (httpDashboardForm == null) {
             httpDashboardForm = new HttpDashboardForm(tabName, project);

@@ -11,6 +11,7 @@ import consulo.execution.executor.DefaultRunExecutor;
 import consulo.execution.executor.Executor;
 import consulo.execution.executor.ExecutorRegistry;
 import consulo.execution.runner.ExecutionEnvironment;
+import consulo.execution.runner.ExecutionEnvironmentBuilder;
 import consulo.execution.runner.GenericProgramRunner;
 import consulo.execution.runner.RunContentBuilder;
 import consulo.execution.ui.RunContentDescriptor;
@@ -78,7 +79,10 @@ public class HttpProgramRunner extends GenericProgramRunner<RunnerSettings> {
         RunnerAndConfigurationSettings runnerAndConfigurationSettings =
             HttpUtils.saveConfiguration(tabName, project, selectedEnv, httpMethod);
 
-        ExecutionEnvironment environment = new ExecutionEnvironment(httpExecutor, this, runnerAndConfigurationSettings, project);
+        // settings must be passed - without them the run dashboard can't bind the run content to the configuration node
+        ExecutionEnvironment environment = new ExecutionEnvironmentBuilder(project, httpExecutor)
+            .runnerAndSettings(this, runnerAndConfigurationSettings)
+            .build();
 
         try {
             execute(environment);

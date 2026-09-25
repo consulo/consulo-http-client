@@ -96,7 +96,7 @@ public enum HttpRequestEnum {
             long tmpLength = pair.getFirst() == null ? -1 : pair.getFirst().length;
             long contentLength = tmpLength == -1L ? multipartLength : tmpLength;
             
-            if (pair.getFirst() != null && pair.getFirst().length > 0) {
+            if (pair.getFirst() != null && pair.getFirst().length > 0 && myHttpMethod != HttpMethod.GET) {
                 builder.body(pair.getFirst());
             }
 

@@ -16,7 +16,7 @@ public class HttpExecutionResult implements ExecutionResult {
 
     @Override
     public ExecutionConsole getExecutionConsole() {
-        return new HttpExecutionConsole(httpProcessHandler.getComponent());
+        return new HttpExecutionConsole(httpProcessHandler.getUIComponent());
     }
 
     @Override

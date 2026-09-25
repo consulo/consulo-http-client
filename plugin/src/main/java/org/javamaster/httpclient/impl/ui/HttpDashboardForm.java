@@ -1,9 +1,5 @@
 package org.javamaster.httpclient.impl.ui;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.intellij.uiDesigner.core.GridConstraints;
-import com.intellij.uiDesigner.core.GridLayoutManager;
 import consulo.codeEditor.Editor;
 import consulo.codeEditor.EditorFactory;
 import consulo.disposer.Disposable;
@@ -11,10 +7,15 @@ import consulo.httpClient.impl.internal.action.HttpDashboardVerticalGroup;
 import consulo.httpClient.localize.HttpClientLocalize;
 import consulo.language.file.light.LightVirtualFile;
 import consulo.project.Project;
+import consulo.ui.Component;
+import consulo.ui.Label;
+import consulo.ui.Space;
+import consulo.ui.annotation.RequiredUIAccess;
 import consulo.ui.ex.action.*;
-import consulo.ui.ex.awt.JBScrollPane;
-import consulo.ui.ex.awt.JBSplitter;
-import consulo.ui.ex.awt.JBUI;
+import consulo.ui.layout.DockLayout;
+import consulo.ui.layout.ScrollableLayout;
+import consulo.ui.layout.SplitLayoutPosition;
+import consulo.ui.layout.TwoComponentSplitLayout;
 import consulo.virtualFileSystem.VirtualFile;
 import consulo.virtualFileSystem.util.VirtualFileUtil;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -28,110 +29,101 @@ import org.javamaster.httpclient.impl.utils.HttpUtils;
 import org.javamaster.httpclient.impl.utils.VirtualFileUtils;
 import org.javamaster.httpclient.model.HttpInfo;
 import org.javamaster.httpclient.model.SimpleTypeEnum;
+import org.jspecify.annotations.Nullable;
 
-import javax.swing.*;
-import java.awt.*;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public class HttpDashboardForm implements Disposable {
-    private final static Map<String, HttpDashboardForm> historyMap = Maps.newHashMap();
+    private static final Map<String, HttpDashboardForm> ourHistoryMap = new HashMap<>();
 
-    private final List<Editor> editorList = Lists.newArrayList();
-    public JPanel mainPanel;
-    public Throwable throwable;
-    public JPanel requestPanel;
-    public JPanel responsePanel;
-    private JPanel reqVerticalToolbarPanel;
-    private JPanel resVerticalToolbarPanel;
-    @SuppressWarnings("unused")
-    private JPanel reqPanel;
-    @SuppressWarnings("unused")
-    private JPanel resPanel;
-    private JBSplitter splitter;
+    private final List<Editor> myEditorList = new ArrayList<>();
 
-    private final String tabName;
-    private final Project project;
+    private final String myTabName;
+    private final Project myProject;
 
+    private final TwoComponentSplitLayout myRootLayout;
+    private final DockLayout myRequestLayout;
+    private final DockLayout myResponseLayout;
+
+    private @Nullable Throwable myThrowable;
+
+    @RequiredUIAccess
     public HttpDashboardForm(String tabName, Project project) {
-        this.tabName = tabName;
-        this.project = project;
+        myTabName = tabName;
+        myProject = project;
 
-        init();
+        myRequestLayout = DockLayout.create(Space.NONE);
+        myResponseLayout = DockLayout.create(Space.NONE);
 
-        splitter.setSplitterProportionKey("httpRequestCustomProportionKey");
+        myRootLayout = TwoComponentSplitLayout.create(SplitLayoutPosition.HORIZONTAL)
+            .withFirstComponent(myRequestLayout)
+            .withSecondComponent(myResponseLayout);
 
         disposePreviousReqEditors();
 
-        historyMap.put(tabName, this);
+        ourHistoryMap.put(tabName, this);
     }
 
-    public JPanel getMainPanel() {
-        return mainPanel;
+    public Component getUIComponent() {
+        return myRootLayout;
     }
 
-    public Throwable getThrowable() {
-        return throwable;
+    public @Nullable Throwable getThrowable() {
+        return myThrowable;
     }
 
+    @RequiredUIAccess
     public void initHttpResContent(HttpInfo httpInfo, boolean noLog) {
-        GridLayoutManager layout = (GridLayoutManager) requestPanel.getParent().getLayout();
-        GridConstraints constraints = layout.getConstraintsForComponent(requestPanel);
-
-        throwable = httpInfo.getHttpException();
+        myThrowable = httpInfo.getHttpException();
         SimpleTypeEnum simpleTypeEnum = httpInfo.getType();
 
         byte[] reqBytes = String.join("", httpInfo.getHttpReqDescList()).getBytes(StandardCharsets.UTF_8);
 
-        Editor reqEditor = HttpUiUtils.createEditor(reqBytes, "req.http", project, tabName,
-            editorList, true, simpleTypeEnum, noLog);
+        Editor reqEditor = HttpUiUtils.createEditor(reqBytes, "req.http", myProject, myTabName,
+            myEditorList, true, simpleTypeEnum, noLog);
 
-        requestPanel.add(reqEditor.getComponent(), constraints);
+        myRequestLayout.center(reqEditor.getUIComponent());
 
-        // TODO  initVerticalToolbarPanel(reqEditor, reqVerticalToolbarPanel, null, null);
+        // TODO initVerticalToolbar(reqEditor, myRequestLayout, null, null);
 
-        if (throwable != null) {
-            String msg = ExceptionUtils.getStackTrace(throwable);
+        if (myThrowable != null) {
+            String msg = ExceptionUtils.getStackTrace(myThrowable);
 
             Editor errorEditor = HttpUiUtils.createEditor(msg.getBytes(StandardCharsets.UTF_8),
-                "error.log", project, tabName, editorList, false, simpleTypeEnum, noLog);
+                "error.log", myProject, myTabName, myEditorList, false, simpleTypeEnum, noLog);
 
-            responsePanel.add(errorEditor.getComponent(), constraints);
+            myResponseLayout.center(errorEditor.getUIComponent());
 
-            // TODO initVerticalToolbarPanel(errorEditor, resVerticalToolbarPanel, null, null);
+            // TODO initVerticalToolbar(errorEditor, myResponseLayout, null, null);
+        }
+        else {
+            VirtualFile responseBodyFile = saveResponseToFile(httpInfo, myTabName, noLog);
 
-            return;
+            byte[] resBytes = String.join("", httpInfo.getHttpResDescList()).getBytes(StandardCharsets.UTF_8);
+
+            Editor resEditor = HttpUiUtils.createEditor(resBytes, "res.http", myProject, myTabName,
+                myEditorList, false, simpleTypeEnum, noLog);
+
+            myResponseLayout.center(resEditor.getUIComponent());
+
+            initVerticalToolbar(resEditor, myResponseLayout, simpleTypeEnum, responseBodyFile);
+//
+//            if (Objects.equals(simpleTypeEnum, SimpleTypeEnum.IMAGE)) {
+//                ImageEditorImpl imageEditor = new ImageEditorImpl(myProject, responseBodyFile);
+//
+//                renderResponsePresentation(resEditor.getUIComponent(), ScrollableLayout.create(imageEditor.getUIComponent()));
+//            }
         }
 
-        VirtualFile responseBodyFile = saveResponseToFile(httpInfo, tabName, noLog);
-
-        byte[] resBytes = String.join("", httpInfo.getHttpResDescList()).getBytes(StandardCharsets.UTF_8);
-
-        GridLayoutManager layoutRes = (GridLayoutManager) responsePanel.getParent().getLayout();
-        GridConstraints constraintsRes = layoutRes.getConstraintsForComponent(responsePanel);
-
-        Editor resEditor = HttpUiUtils.createEditor(resBytes, "res.http", project, tabName,
-            editorList, false, simpleTypeEnum, noLog);
-
-        responsePanel.add(resEditor.getComponent(), constraintsRes);
-
-        initVerticalToolbarPanel(resEditor, resVerticalToolbarPanel, simpleTypeEnum, responseBodyFile);
-//
-//        if (Objects.equals(simpleTypeEnum, SimpleTypeEnum.IMAGE)) {
-//            ImageEditorImpl imageEditor = new ImageEditorImpl(project, responseBodyFile);
-//
-//            JBScrollPane presentation = new JBScrollPane(imageEditor.getComponent());
-//
-//            renderResponsePresentation(resEditor.getComponent(), presentation, constraintsRes);
-//        }
+        // the form is already showing when the response arrives - without it the editors may stay unpainted
+        myRootLayout.forceRepaint();
     }
 
-    private void initVerticalToolbarPanel(Editor target, JPanel jPanel, SimpleTypeEnum resType, VirtualFile resBodyFile) {
+    @RequiredUIAccess
+    private void initVerticalToolbar(Editor target, DockLayout layout, SimpleTypeEnum resType, VirtualFile resBodyFile) {
         ActionManager actionManager = ActionManager.getInstance();
 
         AnAction viewSettingsAction = new ViewSettingsAction(target);
@@ -150,11 +142,9 @@ public class HttpDashboardForm implements Disposable {
         }
 
         ActionToolbar toolbar = actionManager.createActionToolbar("httpDashboardVerticalToolbar", defaultActionGroup, false);
-        toolbar.setTargetComponent(target.getComponent());
+        toolbar.setTargetUIComponent(target.getUIComponent());
 
-        JComponent component = toolbar.getComponent();
-
-        jPanel.add(component);
+        layout.right(toolbar.getUIComponent());
     }
 
     private VirtualFile saveResponseToFile(HttpInfo httpInfo, String tabName, boolean noLog) {
@@ -176,7 +166,7 @@ public class HttpDashboardForm implements Disposable {
                 return lightVirtualFile;
             }
 
-            File dateHistoryDir = VirtualFileUtils.getDateHistoryDir(project);
+            File dateHistoryDir = VirtualFileUtils.getDateHistoryDir(myProject);
 
             File resBodyDir = new File(dateHistoryDir, tabName);
             if (!resBodyDir.exists()) {
@@ -208,20 +198,21 @@ public class HttpDashboardForm implements Disposable {
         }
     }
 
-    private void renderResponsePresentation(JComponent resComponent, JComponent presentation, GridConstraints constraintsRes) {
-        Dimension size = resComponent.getSize();
-        resComponent.setPreferredSize(new Dimension(size.width, 160));
+    @RequiredUIAccess
+    private void renderResponsePresentation(Component resComponent, Component presentation) {
+        DockLayout resLayout = DockLayout.create(Space.NONE);
+        resLayout.center(resComponent);
+        resLayout.setHeight(160);
 
-        JPanel jPanel = new JPanel(new BorderLayout());
-        jPanel.add(resComponent, BorderLayout.NORTH);
+        DockLayout previewLayout = DockLayout.create();
+        previewLayout.top(Label.create(HttpClientLocalize.resRenderResult()));
+        previewLayout.center(presentation);
 
-        JPanel previewPanel = new JPanel(new BorderLayout());
-        previewPanel.add(new JLabel(HttpClientLocalize.resRenderResult().get()), BorderLayout.NORTH);
-        previewPanel.add(presentation, BorderLayout.CENTER);
+        DockLayout layout = DockLayout.create();
+        layout.top(resLayout);
+        layout.center(previewLayout);
 
-        jPanel.add(previewPanel, BorderLayout.CENTER);
-
-        responsePanel.add(new JBScrollPane(jPanel), constraintsRes);
+        myResponseLayout.center(ScrollableLayout.create(layout));
     }
 
 //    public void initWsForm(WsRequest wsRequest) {
@@ -319,7 +310,7 @@ public class HttpDashboardForm implements Disposable {
 //    }
 
     private void disposePreviousReqEditors() {
-        HttpDashboardForm previousHttpDashboardForm = historyMap.remove(tabName);
+        HttpDashboardForm previousHttpDashboardForm = ourHistoryMap.remove(myTabName);
         if (previousHttpDashboardForm == null) {
             return;
         }
@@ -329,7 +320,7 @@ public class HttpDashboardForm implements Disposable {
 
     private void disposeEditors() {
         EditorFactory editorFactory = EditorFactory.getInstance();
-        editorList.forEach(it -> {
+        myEditorList.forEach(it -> {
             if (it.isDisposed()) {
                 return;
             }
@@ -341,43 +332,5 @@ public class HttpDashboardForm implements Disposable {
     @Override
     public void dispose() {
 
-    }
-
-    private void init() {
-        mainPanel = new JPanel();
-        mainPanel.setLayout(new GridLayoutManager(1, 1, JBUI.emptyInsets(), -1, -1));
-        splitter = new JBSplitter();
-        splitter.setLayout(new BorderLayout(0, 0));
-        mainPanel.add(splitter, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
-        reqPanel = new JPanel();
-        reqPanel.setLayout(new GridLayoutManager(1, 2, JBUI.emptyInsets(), -1, -1));
-        splitter.add(reqPanel, BorderLayout.WEST);
-        requestPanel = new JPanel();
-        requestPanel.setLayout(new GridLayoutManager(1, 1, JBUI.emptyInsets(), -1, -1));
-        reqPanel.add(requestPanel, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        reqVerticalToolbarPanel = new JPanel();
-        reqVerticalToolbarPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-        reqPanel.add(reqVerticalToolbarPanel, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, new Dimension(20, -1), new Dimension(20, -1), new Dimension(20, -1), 0, false));
-        resPanel = new JPanel();
-        resPanel.setLayout(new GridLayoutManager(1, 3, JBUI.emptyInsets(), -1, -1));
-        splitter.add(resPanel, BorderLayout.EAST);
-        responsePanel = new JPanel();
-        responsePanel.setLayout(new GridLayoutManager(1, 1, JBUI.emptyInsets(), -1, -1));
-        resPanel.add(responsePanel, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        resVerticalToolbarPanel = new JPanel();
-        resVerticalToolbarPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-        resPanel.add(resVerticalToolbarPanel, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, new Dimension(20, -1), new Dimension(20, -1), new Dimension(20, -1), 0, false));
-        final JLabel label1 = new JLabel();
-        label1.setText("");
-        resPanel.add(label1, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        splitter.setSecondComponent(resPanel);
-        splitter.setFirstComponent(reqPanel);
-    }
-
-    /**
-     * @noinspection ALL
-     */
-    public JComponent $$$getRootComponent$$$() {
-        return mainPanel;
     }
 }
