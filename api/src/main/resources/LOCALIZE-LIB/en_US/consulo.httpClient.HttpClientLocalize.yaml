@@ -308,6 +308,16 @@ response.presentations:
     text: Response presentations
 response.status.desc:
     text: Mock Server response status code
+run.all.done:
+    text: All requests are finished
+run.all.failed:
+    text: '{0} failed, the rest of the requests are skipped'
+run.all.skipped:
+    text: '{0} is skipped: {1} requests are not supported'
+run.all.started:
+    text: Running {0}
+run.all.stopped:
+    text: Running of the requests is stopped
 run.all.tooltip:
     text: Run all requests of the file(think time is 2 seconds)
 save.failed:

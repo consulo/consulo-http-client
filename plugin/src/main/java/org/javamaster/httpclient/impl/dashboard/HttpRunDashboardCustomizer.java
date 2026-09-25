@@ -30,7 +30,10 @@ public class HttpRunDashboardCustomizer extends RunDashboardCustomizer {
     @Override
     public PsiElement getPsiElement(RunDashboardRunConfigurationNode node) {
         HttpRunConfiguration configuration = (HttpRunConfiguration) node.getConfigurationSettings().getConfiguration();
-        return HttpUtils.getTargetHttpMethod(configuration.getHttpFilePath(), configuration.getName(), configuration.getProject());
+        if (configuration.isRunAll()) {
+            return HttpUtils.findHttpFile(configuration.getHttpFilePath(), configuration.getProject());
+        }
+        return HttpUtils.getTargetHttpMethod(configuration.getHttpFilePath(), configuration.getRequestName(), configuration.getProject());
     }
 
     @Override
@@ -40,8 +43,8 @@ public class HttpRunDashboardCustomizer extends RunDashboardCustomizer {
             return false;
         }
 
-        HttpProcessHandler processHandler = (HttpProcessHandler) descriptor.getProcessHandler();
-        if (processHandler == null) {
+        // the run of all requests of the file has no status of its own
+        if (!(descriptor.getProcessHandler() instanceof HttpProcessHandler processHandler)) {
             return false;
         }
 

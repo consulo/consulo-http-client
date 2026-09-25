@@ -6,7 +6,6 @@ import consulo.annotation.access.RequiredReadAction;
 import consulo.execution.RunManager;
 import consulo.execution.RunnerAndConfigurationSettings;
 import consulo.language.psi.PsiElement;
-import consulo.language.psi.PsiFile;
 import consulo.language.psi.PsiManager;
 import consulo.language.psi.PsiUtilCore;
 import consulo.language.psi.util.PsiTreeUtil;
@@ -27,9 +26,12 @@ import org.javamaster.httpclient.psi.HttpMethod;
 import org.javamaster.httpclient.psi.HttpRequestBlock;
 import org.javamaster.httpclient.psi.HttpRequestTarget;
 import org.javamaster.httpclient.run.HttpRunConfigurationApi;
+import org.jspecify.annotations.Nullable;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -71,7 +73,7 @@ public class HttpUtilsPart {
     }
 
     @RequiredReadAction
-    public static HttpMethod getTargetHttpMethod(String httpFilePath, String runConfigName, Project project) {
+    public static @Nullable HttpFile findHttpFile(String httpFilePath, Project project) {
         if (StringUtil.isEmptyOrSpaces(httpFilePath)) {
             return null;
         }
@@ -81,13 +83,22 @@ public class HttpUtilsPart {
             return null;
         }
 
-        PsiFile psiFile = PsiUtilCore.getPsiFile(project, virtualFile);
-        Collection<HttpMethod> httpMethods = PsiTreeUtil.findChildrenOfType(psiFile, HttpMethod.class);
+        return PsiUtilCore.getPsiFile(project, virtualFile) instanceof HttpFile httpFile ? httpFile : null;
+    }
+
+    @RequiredReadAction
+    public static HttpMethod getTargetHttpMethod(String httpFilePath, String requestName, Project project) {
+        HttpFile httpFile = findHttpFile(httpFilePath, project);
+        if (httpFile == null) {
+            return null;
+        }
+
+        Collection<HttpMethod> httpMethods = PsiTreeUtil.findChildrenOfType(httpFile, HttpMethod.class);
 
         return httpMethods.stream()
             .filter(it -> {
                 String tabName = getTabName(it);
-                return runConfigName.equals(tabName);
+                return requestName.equals(tabName);
             })
             .findFirst()
             .orElse(null);
@@ -147,12 +158,31 @@ public class HttpUtilsPart {
         return "HTTP Request #0";
     }
 
+    /**
+     * Tab name is a part of the names of the request history files
+     *
+     * @return why the tab name can't be used, or null when it can
+     */
+    public static @Nullable String getTabNameError(String tabName) {
+        if (tabName.contains("/") || tabName.contains("\\")) {
+            return "Illegal char: / \\";
+        }
+
+        try {
+            Path.of(tabName);
+            return null;
+        }
+        catch (InvalidPathException e) {
+            return e.getMessage();
+        }
+    }
+
     public static VirtualFile getOriginalFile(Project project, String tabName) {
         RunManager runManager = RunManager.getInstance(project);
         RunnerAndConfigurationSettings configurationSettings = runManager.getAllSettings()
             .stream()
-            .filter(it -> it.getConfiguration() instanceof HttpRunConfigurationApi
-                && it.getConfiguration().getName().equals(tabName))
+            .filter(it -> it.getConfiguration() instanceof HttpRunConfigurationApi api
+                && api.getRequestName().equals(tabName))
             .findFirst()
             .orElse(null);
 

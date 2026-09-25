@@ -2,12 +2,14 @@ package org.javamaster.httpclient.impl.utils;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonSyntaxException;
-import consulo.application.Application;
+import consulo.application.ReadAction;
 import consulo.application.util.function.Computable;
 import consulo.document.util.TextRange;
 import consulo.execution.RunManager;
 import consulo.execution.RunnerAndConfigurationSettings;
-import consulo.execution.configuration.ConfigurationType;
+import consulo.execution.action.ConfigurationContext;
+import consulo.execution.action.ConfigurationFromContext;
+import consulo.execution.action.RunConfigurationProducer;
 import consulo.fileEditor.FileEditorManager;
 import consulo.httpClient.localize.HttpClientLocalize;
 import consulo.language.editor.WriteCommandAction;
@@ -26,8 +28,8 @@ import org.javamaster.httpclient.NlsBundle;
 import org.javamaster.httpclient.env.EnvFileService;
 import org.javamaster.httpclient.factory.HttpPsiFactory;
 import org.javamaster.httpclient.impl.resolve.VariableResolver;
-import org.javamaster.httpclient.impl.runconfig.HttpConfigurationType;
 import org.javamaster.httpclient.impl.runconfig.HttpRunConfiguration;
+import org.javamaster.httpclient.impl.runconfig.HttpRunConfigurationProducer;
 import org.javamaster.httpclient.impl.ui.HttpEditorTopForm;
 import org.javamaster.httpclient.map.LinkedMultiValueMap;
 import org.javamaster.httpclient.model.HttpResponse;
@@ -37,6 +39,7 @@ import org.javamaster.httpclient.model.SimpleTypeEnum;
 import org.javamaster.httpclient.parser.HttpFile;
 import org.javamaster.httpclient.psi.*;
 import org.javamaster.httpclient.utils.HttpUtilsPart;
+import org.jspecify.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
@@ -59,39 +62,39 @@ public class HttpUtils extends HttpUtilsPart {
     public static final int SUCCESS = 0;
     public static final int FAILED = 1;
 
-    public static RunnerAndConfigurationSettings saveConfiguration(
-        String tabName,
+    /**
+     * Configuration of the request - the stored one, or a new one which is not stored, same as the run from the context creates
+     */
+    public static @Nullable RunnerAndConfigurationSettings findOrCreateConfiguration(HttpMethod httpMethod) {
+        HttpRunConfigurationProducer producer = RunConfigurationProducer.getInstance(HttpRunConfigurationProducer.class);
+
+        ConfigurationFromContext fromContext = ReadAction.compute(
+            () -> producer.findOrCreateConfigurationFromContext(new ConfigurationContext(httpMethod), true)
+        );
+        return fromContext != null ? fromContext.getConfigurationSettings() : null;
+    }
+
+    /**
+     * Configuration of the request, stored and selected - the run from the gutter keeps it
+     */
+    public static @Nullable RunnerAndConfigurationSettings saveConfiguration(
         Project project,
-        String selectedEnv,
+        @Nullable String selectedEnv,
         HttpMethod httpMethod
     ) {
-        RunManager runManager = RunManager.getInstance(project);
-
-        RunnerAndConfigurationSettings configurationSettings = runManager.getAllSettings()
-            .stream()
-            .filter(it -> it.getConfiguration() instanceof HttpRunConfiguration
-                && it.getConfiguration().getName().equals(tabName))
-            .findFirst()
-            .orElse(null);
-
-        boolean configNotExists = configurationSettings == null;
-
-        HttpRunConfiguration httpRunConfiguration;
-        if (configNotExists) {
-            HttpConfigurationType type = Application.get().getExtensionPoint(ConfigurationType.class).findExtensionOrFail(HttpConfigurationType.class);
-            configurationSettings = runManager.createRunConfiguration(tabName, type.getConfigurationFactories()[0]);
-            httpRunConfiguration = (HttpRunConfiguration) configurationSettings.getConfiguration();
-        }
-        else {
-            httpRunConfiguration = (HttpRunConfiguration) configurationSettings.getConfiguration();
+        RunnerAndConfigurationSettings configurationSettings = findOrCreateConfiguration(httpMethod);
+        if (configurationSettings == null) {
+            return null;
         }
 
         //configurationSettings.setActivateToolWindowBeforeRun(false);
 
-        httpRunConfiguration.setEnv(selectedEnv != null ? selectedEnv : "");
-        httpRunConfiguration.setHttpFilePath(httpMethod.getContainingFile().getVirtualFile().getPath());
+        // the run from the gutter is with the environment selected in the editor, not with the one of the previous run
+        HttpRunConfiguration httpRunConfiguration = (HttpRunConfiguration) configurationSettings.getConfiguration();
+        httpRunConfiguration.setEnv(StringUtil.notNullize(selectedEnv));
 
-        if (configNotExists) {
+        RunManager runManager = RunManager.getInstance(project);
+        if (runManager.findSettings(httpRunConfiguration) == null) {
             runManager.addConfiguration(configurationSettings);
         }
 
