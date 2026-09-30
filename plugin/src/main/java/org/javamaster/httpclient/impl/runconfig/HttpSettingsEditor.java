@@ -2,38 +2,47 @@ package org.javamaster.httpclient.impl.runconfig;
 
 import consulo.execution.configuration.ui.SettingsEditor;
 import consulo.project.Project;
+import consulo.ui.Component;
+import consulo.ui.annotation.RequiredUIAccess;
 import consulo.util.lang.Pair;
 import org.javamaster.httpclient.impl.ui.ConfigSettingsForm;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.Nullable;
 
-import javax.swing.JComponent;
-
-/**
- * @author yudong
- */
 public class HttpSettingsEditor extends SettingsEditor<HttpRunConfiguration> {
-    private final ConfigSettingsForm configSettingsForm = new ConfigSettingsForm();
+    private final String myEnv;
+    private final String myHttpFilePath;
+    private final Project myProject;
+
+    private @Nullable ConfigSettingsForm myConfigSettingsForm;
 
     public HttpSettingsEditor(String env, String httpFilePath, Project project) {
-        configSettingsForm.initForm(env, httpFilePath, project);
+        myEnv = env;
+        myHttpFilePath = httpFilePath;
+        myProject = project;
     }
 
     @Override
-    protected void resetEditorFrom(@NotNull HttpRunConfiguration runConfiguration) {
-        // No implementation needed
+    protected void resetEditorFrom(HttpRunConfiguration runConfiguration) {
     }
 
     @Override
-    protected void applyEditorTo(@NotNull HttpRunConfiguration runConfiguration) {
+    protected void applyEditorTo(HttpRunConfiguration runConfiguration) {
+        ConfigSettingsForm configSettingsForm = myConfigSettingsForm;
+        if (configSettingsForm == null) {
+            return;
+        }
+
         Pair<String, String> pair = configSettingsForm.getPair();
 
         runConfiguration.setEnv(pair.getFirst());
         runConfiguration.setHttpFilePath(pair.getSecond());
     }
 
-    @NotNull
+    @RequiredUIAccess
     @Override
-    protected JComponent createEditor() {
-        return configSettingsForm.getMainPanel();
+    protected Component createUIComponent() {
+        ConfigSettingsForm configSettingsForm = new ConfigSettingsForm(myEnv, myHttpFilePath, myProject);
+        myConfigSettingsForm = configSettingsForm;
+        return configSettingsForm.getComponent();
     }
 }
