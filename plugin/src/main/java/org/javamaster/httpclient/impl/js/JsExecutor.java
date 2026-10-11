@@ -1,6 +1,7 @@
 package org.javamaster.httpclient.impl.js;
 
 import consulo.language.psi.PsiFile;
+import consulo.localize.LocalizeValue;
 import consulo.project.Project;
 import consulo.util.lang.Trinity;
 import org.javamaster.httpclient.map.LinkedMultiValueMap;
@@ -45,7 +46,7 @@ public interface JsExecutor {
     );
 
     // TODO !
-    static JsExecutor create(Project project, PsiFile httpFile, String tabName) {
+    static JsExecutor create(Project project, PsiFile httpFile, LocalizeValue tabName) {
         return new JsExecutor() {
             @Override
             public String getRequestVariable(String key) {
@@ -64,7 +65,6 @@ public interface JsExecutor {
 
             @Override
             public void initJsRequestObj(HttpReqInfo reqInfo, HttpRequestEnum method, LinkedMultiValueMap<String, String> reqHeaderMap, String selectedEnv, LinkedHashMap<String, String> fileScopeVariableMap) {
-
             }
 
             @Override

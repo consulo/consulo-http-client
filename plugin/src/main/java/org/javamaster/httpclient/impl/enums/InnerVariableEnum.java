@@ -4,6 +4,7 @@ import consulo.httpClient.localize.HttpClientLocalize;
 import consulo.language.editor.completion.lookup.InsertHandler;
 import consulo.language.editor.completion.lookup.LookupElement;
 import consulo.language.editor.completion.lookup.ParenthesesInsertHandler;
+import consulo.localize.LocalizeValue;
 import consulo.platform.Platform;
 import consulo.project.Project;
 import consulo.util.io.StreamUtil;
@@ -12,7 +13,6 @@ import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.commons.lang3.time.DateUtils;
-import org.javamaster.httpclient.NlsBundle;
 import org.javamaster.httpclient.impl.ui.HttpEditorTopForm;
 import org.javamaster.httpclient.impl.utils.HttpUtils;
 import org.javamaster.httpclient.impl.utils.VirtualFileUtils;
@@ -29,8 +29,8 @@ import java.util.concurrent.TimeUnit;
 public enum InnerVariableEnum {
     RANDOM_ALPHABETIC("$random.alphabetic") {
         @Override
-        public String typeText() {
-            return NlsBundle.message("alphabetic.desc", methodName);
+        public LocalizeValue typeText() {
+            return HttpClientLocalize.alphabeticDesc(methodName);
         }
 
         @Override
@@ -50,8 +50,8 @@ public enum InnerVariableEnum {
     },
     RANDOM_ALPHA_NUMERIC("$random.alphanumeric") {
         @Override
-        public String typeText() {
-            return NlsBundle.message("alphanumeric.desc", methodName);
+        public LocalizeValue typeText() {
+            return HttpClientLocalize.alphanumericDesc(methodName);
         }
 
         @Override
@@ -71,8 +71,8 @@ public enum InnerVariableEnum {
     },
     RANDOM_HEXADECIMAL("$random.hexadecimal") {
         @Override
-        public String typeText() {
-            return NlsBundle.message("hexadecimal.desc", methodName);
+        public LocalizeValue typeText() {
+            return HttpClientLocalize.hexadecimalDesc(methodName);
         }
 
         @Override
@@ -92,8 +92,8 @@ public enum InnerVariableEnum {
     },
     RANDOM_NUMERIC("$random.numeric") {
         @Override
-        public String typeText() {
-            return NlsBundle.message("numeric.desc", methodName);
+        public LocalizeValue typeText() {
+            return HttpClientLocalize.numericDesc(methodName);
         }
 
         @Override
@@ -113,8 +113,8 @@ public enum InnerVariableEnum {
     },
     RANDOM_UUID("$random.uuid") {
         @Override
-        public String typeText() {
-            return NlsBundle.message("uuid.desc");
+        public LocalizeValue typeText() {
+            return HttpClientLocalize.uuidDesc();
         }
 
         @Override
@@ -124,8 +124,8 @@ public enum InnerVariableEnum {
     },
     RANDOM_INT("$randomInt") {
         @Override
-        public String typeText() {
-            return NlsBundle.message("randomInt.desc");
+        public LocalizeValue typeText() {
+            return HttpClientLocalize.randomintDesc();
         }
 
         @Override
@@ -135,8 +135,8 @@ public enum InnerVariableEnum {
     },
     RANDOM_INTEGER("$random.integer") {
         @Override
-        public String typeText() {
-            return NlsBundle.message("integer.desc", methodName);
+        public LocalizeValue typeText() {
+            return HttpClientLocalize.integerDesc(methodName);
         }
 
         @Override
@@ -157,8 +157,8 @@ public enum InnerVariableEnum {
     },
     RANDOM_FLOAT("$random.float") {
         @Override
-        public String typeText() {
-            return NlsBundle.message("float.desc", methodName);
+        public LocalizeValue typeText() {
+            return HttpClientLocalize.floatDesc(methodName);
         }
 
         @Override
@@ -179,8 +179,8 @@ public enum InnerVariableEnum {
     },
     TIMESTAMP("$timestamp") {
         @Override
-        public String typeText() {
-            return NlsBundle.message("timestamp.desc");
+        public LocalizeValue typeText() {
+            return HttpClientLocalize.timestampDesc();
         }
 
         @Override
@@ -190,8 +190,8 @@ public enum InnerVariableEnum {
     },
     TIMESTAMP_FULL("$timestampFull") {
         @Override
-        public String typeText() {
-            return NlsBundle.message("timestampFull.desc", methodName);
+        public LocalizeValue typeText() {
+            return HttpClientLocalize.timestampfullDesc(methodName);
         }
 
         @Override
@@ -218,19 +218,20 @@ public enum InnerVariableEnum {
     },
     ISO_TIMESTAMP("$isoTimestamp") {
         @Override
-        public String typeText() {
-            return NlsBundle.message("isoTimestamp.desc");
+        public LocalizeValue typeText() {
+            return HttpClientLocalize.isotimestampDesc();
         }
 
         @Override
+        @SuppressWarnings("SpellCheckingInspection")
         public String exec(String httpFileParentPath, Object... args) {
             return DateFormatUtils.format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", TimeZone.getDefault());
         }
     },
     DATETIME("$datetime") {
         @Override
-        public String typeText() {
-            return NlsBundle.message("datetime.desc");
+        public LocalizeValue typeText() {
+            return HttpClientLocalize.datetimeDesc();
         }
 
         @Override
@@ -240,8 +241,8 @@ public enum InnerVariableEnum {
     },
     TIMESTAMP_DATE("$timestampDate") {
         @Override
-        public String typeText() {
-            return NlsBundle.message("timestampDate.desc", methodName);
+        public LocalizeValue typeText() {
+            return HttpClientLocalize.timestampdateDesc(methodName);
         }
 
         @Override
@@ -264,8 +265,8 @@ public enum InnerVariableEnum {
     },
     DATE("$date") {
         @Override
-        public String typeText() {
-            return NlsBundle.message("date.desc", methodName);
+        public LocalizeValue typeText() {
+            return HttpClientLocalize.dateDesc(methodName);
         }
 
         @Override
@@ -288,8 +289,8 @@ public enum InnerVariableEnum {
     },
     IMAGE_TO_BASE64("$imageToBase64") {
         @Override
-        public String typeText() {
-            return NlsBundle.message("imageToBase64.desc", methodName);
+        public LocalizeValue typeText() {
+            return HttpClientLocalize.imagetobase64Desc(methodName);
         }
 
         @Override
@@ -302,7 +303,7 @@ public enum InnerVariableEnum {
             String filePath = HttpUtils.constructFilePath(path, httpFileParentPath);
             File file = new File(filePath);
 
-            byte[] bytes = new byte[0];
+            byte[] bytes;
             try {
                 bytes = VirtualFileUtils.readNewestBytes(file);
             }
@@ -323,7 +324,7 @@ public enum InnerVariableEnum {
     },
     FILE_TO_BASE64("$fileToBase64") {
         @Override
-        public String typeText() {
+        public LocalizeValue typeText() {
             return IMAGE_TO_BASE64.typeText();
         }
 
@@ -339,8 +340,8 @@ public enum InnerVariableEnum {
     },
     READ_STRING("$readString") {
         @Override
-        public String typeText() {
-            return NlsBundle.message("readString.desc", methodName);
+        public LocalizeValue typeText() {
+            return HttpClientLocalize.readstringDesc(methodName);
         }
 
         @Override
@@ -368,8 +369,8 @@ public enum InnerVariableEnum {
     },
 /*    RANDOM_ADDRESS("$random.address.full") {
         @Override
-        public String typeText() {
-            return NlsBundle.message("address.desc");
+        public LocalizeValue typeText() {
+            return HttpClientLocalize.addressDesc();
         }
 
         @Override
@@ -379,8 +380,8 @@ public enum InnerVariableEnum {
     },
     RANDOM_BOOL("$random.bool") {
         @Override
-        public String typeText() {
-            return NlsBundle.message("bool.desc");
+        public LocalizeValue typeText() {
+            return HttpClientLocalize.boolDesc();
         }
 
         @Override
@@ -390,8 +391,8 @@ public enum InnerVariableEnum {
     },
     RANDOM_NAME("$random.name") {
         @Override
-        public String typeText() {
-            return NlsBundle.message("name.desc");
+        public LocalizeValue typeText() {
+            return HttpClientLocalize.nameDesc();
         }
 
         @Override
@@ -401,8 +402,8 @@ public enum InnerVariableEnum {
     },
     RANDOM_BOOK_TITLE("$random.book.title") {
         @Override
-        public String typeText() {
-            return NlsBundle.message("book.desc");
+        public LocalizeValue typeText() {
+            return HttpClientLocalize.bookDesc();
         }
 
         @Override
@@ -412,8 +413,8 @@ public enum InnerVariableEnum {
     },
     RANDOM_APP_NAME("$random.app.name") {
         @Override
-        public String typeText() {
-            return NlsBundle.message("app.desc");
+        public LocalizeValue typeText() {
+            return HttpClientLocalize.appDesc();
         }
 
         @Override
@@ -423,8 +424,8 @@ public enum InnerVariableEnum {
     },
     RANDOM_COMPANY_NAME("$random.company.name") {
         @Override
-        public String typeText() {
-            return NlsBundle.message("company.desc");
+        public LocalizeValue typeText() {
+            return HttpClientLocalize.companyDesc();
         }
 
         @Override
@@ -434,8 +435,8 @@ public enum InnerVariableEnum {
     },
     RANDOM_HERO_NAME("$random.hero.name") {
         @Override
-        public String typeText() {
-            return HttpClientLocalize.heroDesc().get();
+        public LocalizeValue typeText() {
+            return HttpClientLocalize.heroDesc();
         }
 
         @Override
@@ -445,8 +446,8 @@ public enum InnerVariableEnum {
     },
     RANDOM_NATION_NAME("$random.nation.name") {
         @Override
-        public String typeText() {
-            return NlsBundle.message("nation.desc");
+        public LocalizeValue typeText() {
+            return HttpClientLocalize.nationDesc();
         }
 
         @Override
@@ -456,8 +457,8 @@ public enum InnerVariableEnum {
     },
     RANDOM_UNIVERSITY_NAME("$random.university.name") {
         @Override
-        public String typeText() {
-            return NlsBundle.message("university.desc");
+        public LocalizeValue typeText() {
+            return HttpClientLocalize.universityDesc();
         }
 
         @Override
@@ -467,8 +468,8 @@ public enum InnerVariableEnum {
     },
     RANDOM_PHONE_NUMBER("$random.phoneNumber") {
         @Override
-        public String typeText() {
-            return "生成电话号码";
+        public LocalizeValue typeText() {
+            return LocalizeValue.localizeTODO("生成电话号码");
         }
 
         @Override
@@ -478,8 +479,8 @@ public enum InnerVariableEnum {
     },
     RANDOM_COLOR("$random.color") {
         @Override
-        public String typeText() {
-            return "生成颜色名称";
+        public LocalizeValue typeText() {
+            return LocalizeValue.localizeTODO("生成颜色名称");
         }
 
         @Override
@@ -489,8 +490,8 @@ public enum InnerVariableEnum {
     },
     RANDOM_EDUCATOR("$random.educator") {
         @Override
-        public String typeText() {
-            return "生成教育家课程";
+        public LocalizeValue typeText() {
+            return LocalizeValue.localizeTODO("生成教育家课程");
         }
 
         @Override
@@ -500,8 +501,8 @@ public enum InnerVariableEnum {
     },
     RANDOM_HACKER("$random.hacker") {
         @Override
-        public String typeText() {
-            return "生成 hacker";
+        public LocalizeValue typeText() {
+            return LocalizeValue.localizeTODO("生成 hacker");
         }
 
         @Override
@@ -511,8 +512,8 @@ public enum InnerVariableEnum {
     },
     RANDOM_INTERNET("$random.internet") {
         @Override
-        public String typeText() {
-            return "生成 url";
+        public LocalizeValue typeText() {
+            return LocalizeValue.localizeTODO("生成 url");
         }
 
         @Override
@@ -522,8 +523,8 @@ public enum InnerVariableEnum {
     },
     RANDOM_EMAIL("$random.email") {
         @Override
-        public String typeText() {
-            return "生成 email";
+        public LocalizeValue typeText() {
+            return LocalizeValue.localizeTODO("生成 email");
         }
 
         @Override
@@ -533,8 +534,8 @@ public enum InnerVariableEnum {
     },
     RANDOM_BEER("$random.beer") {
         @Override
-        public String typeText() {
-            return "生成 beer";
+        public LocalizeValue typeText() {
+            return LocalizeValue.localizeTODO("生成 beer");
         }
 
         @Override
@@ -544,8 +545,8 @@ public enum InnerVariableEnum {
     },
     RANDOM_CODE("$random.code") {
         @Override
-        public String typeText() {
-            return "生成 code";
+        public LocalizeValue typeText() {
+            return LocalizeValue.localizeTODO("生成 code");
         }
 
         @Override
@@ -555,8 +556,8 @@ public enum InnerVariableEnum {
     },
     RANDOM_COMMERCE("$random.commerce") {
         @Override
-        public String typeText() {
-            return "生成 commerce";
+        public LocalizeValue typeText() {
+            return LocalizeValue.localizeTODO("生成 commerce");
         }
 
         @Override
@@ -566,8 +567,8 @@ public enum InnerVariableEnum {
     },
     RANDOM_CRYPTO("$random.crypto") {
         @Override
-        public String typeText() {
-            return "生成 md5";
+        public LocalizeValue typeText() {
+            return LocalizeValue.localizeTODO("生成 md5");
         }
 
         @Override
@@ -577,8 +578,8 @@ public enum InnerVariableEnum {
     },
     RANDOM_FINANCE("$random.finance") {
         @Override
-        public String typeText() {
-            return "生成 finance";
+        public LocalizeValue typeText() {
+            return LocalizeValue.localizeTODO("生成 finance");
         }
 
         @Override
@@ -588,8 +589,8 @@ public enum InnerVariableEnum {
     },
     RANDOM_ID_NUMBER("$random.idNumber") {
         @Override
-        public String typeText() {
-            return "生成 idNumber";
+        public LocalizeValue typeText() {
+            return LocalizeValue.localizeTODO("生成 idNumber");
         }
 
         @Override
@@ -599,8 +600,8 @@ public enum InnerVariableEnum {
     },
     RANDOM_LOREM("$random.lorem") {
         @Override
-        public String typeText() {
-            return "生成 lorem";
+        public LocalizeValue typeText() {
+            return LocalizeValue.localizeTODO("生成 lorem");
         }
 
         @Override
@@ -610,8 +611,8 @@ public enum InnerVariableEnum {
     },
     RANDOM_ANIMAL("$random.animal") {
         @Override
-        public String typeText() {
-            return "生成 animal";
+        public LocalizeValue typeText() {
+            return LocalizeValue.localizeTODO("生成 animal");
         }
 
         @Override
@@ -621,8 +622,8 @@ public enum InnerVariableEnum {
     },
     RANDOM_NUMBER("$random.number") {
         @Override
-        public String typeText() {
-            return "生成范围内数字,用法" + methodName + "(10, 1000)";
+        public LocalizeValue typeText() {
+            return LocalizeValue.localizeTODO("生成范围内数字,用法" + methodName + "(10, 1000)");
         }
 
         @Override
@@ -641,8 +642,8 @@ public enum InnerVariableEnum {
     },
     RANDOM_SHAKESPEARE("$random.shakespeare") {
         @Override
-        public String typeText() {
-            return "生成 shakespeare";
+        public LocalizeValue typeText() {
+            return LocalizeValue.localizeTODO("生成 shakespeare");
         }
 
         @Override
@@ -652,8 +653,8 @@ public enum InnerVariableEnum {
     },
     RANDOM_TEAM("$random.team") {
         @Override
-        public String typeText() {
-            return "生成 team";
+        public LocalizeValue typeText() {
+            return LocalizeValue.localizeTODO("生成 team");
         }
 
         @Override
@@ -663,8 +664,8 @@ public enum InnerVariableEnum {
     },
     RANDOM_PROGRAMMING_LANGUAGE("$random.programmingLanguage") {
         @Override
-        public String typeText() {
-            return "生成 programmingLanguage";
+        public LocalizeValue typeText() {
+            return LocalizeValue.localizeTODO("生成 programmingLanguage");
         }
 
         @Override
@@ -674,8 +675,8 @@ public enum InnerVariableEnum {
     },*/
     PICK("$random.pick") {
         @Override
-        public String typeText() {
-            return NlsBundle.message("pick.desc", methodName, methodName);
+        public LocalizeValue typeText() {
+            return HttpClientLocalize.pickDesc(methodName, methodName);
         }
 
         @Override
@@ -694,8 +695,8 @@ public enum InnerVariableEnum {
     },
     REPEAT("$repeat") {
         @Override
-        public String typeText() {
-            return NlsBundle.message("repeat.desc", methodName);
+        public LocalizeValue typeText() {
+            return HttpClientLocalize.repeatDesc(methodName);
         }
 
         @Override
@@ -717,8 +718,8 @@ public enum InnerVariableEnum {
     },
 //    EVAL("$eval") {
 //        @Override
-//        public String typeText() {
-//            return NlsBundle.message("eval.desc", methodName);
+//        public LocalizeValue typeText() {
+//            return HttpClientLocalize.evalDesc(methodName);
 //        }
 //
 //        @Override
@@ -744,8 +745,8 @@ public enum InnerVariableEnum {
 //    },
     EXEC("$exec") {
         @Override
-        public String typeText() {
-            return NlsBundle.message("exec.desc", methodName);
+        public LocalizeValue typeText() {
+            return HttpClientLocalize.execDesc(methodName);
         }
 
         @Override
@@ -786,8 +787,8 @@ public enum InnerVariableEnum {
     },
     MVN_TARGET("$mvnTarget") {
         @Override
-        public String typeText() {
-            return NlsBundle.message("mvnTarget.desc");
+        public LocalizeValue typeText() {
+            return HttpClientLocalize.mvntargetDesc();
         }
 
         @Override
@@ -814,8 +815,8 @@ public enum InnerVariableEnum {
     },
     PROJECT_ROOT("$projectRoot") {
         @Override
-        public String typeText() {
-            return NlsBundle.message("projectRoot.desc");
+        public LocalizeValue typeText() {
+            return HttpClientLocalize.projectrootDesc();
         }
 
         @Override
@@ -830,8 +831,8 @@ public enum InnerVariableEnum {
     },
     HISTORY_FOLDER("$historyFolder") {
         @Override
-        public String typeText() {
-            return HttpClientLocalize.historyfolderDesc().get();
+        public LocalizeValue typeText() {
+            return HttpClientLocalize.historyfolderDesc();
         }
 
         @Override
@@ -860,7 +861,7 @@ public enum InnerVariableEnum {
         return methodName;
     }
 
-    public abstract String typeText();
+    public abstract LocalizeValue typeText();
 
     public abstract String exec(String httpFileParentPath, Object... args);
 

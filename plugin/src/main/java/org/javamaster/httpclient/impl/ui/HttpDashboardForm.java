@@ -6,6 +6,7 @@ import consulo.disposer.Disposable;
 import consulo.httpClient.impl.internal.action.HttpDashboardVerticalGroup;
 import consulo.httpClient.localize.HttpClientLocalize;
 import consulo.language.file.light.LightVirtualFile;
+import consulo.localize.LocalizeValue;
 import consulo.project.Project;
 import consulo.ui.Component;
 import consulo.ui.Label;
@@ -37,11 +38,11 @@ import java.nio.file.Files;
 import java.util.*;
 
 public class HttpDashboardForm implements Disposable {
-    private static final Map<String, HttpDashboardForm> ourHistoryMap = new HashMap<>();
+    private static final Map<LocalizeValue, HttpDashboardForm> ourHistoryMap = new HashMap<>();
 
     private final List<Editor> myEditorList = new ArrayList<>();
 
-    private final String myTabName;
+    private final LocalizeValue myTabName;
     private final Project myProject;
 
     private final TwoComponentSplitLayout myRootLayout;
@@ -51,7 +52,7 @@ public class HttpDashboardForm implements Disposable {
     private @Nullable Throwable myThrowable;
 
     @RequiredUIAccess
-    public HttpDashboardForm(String tabName, Project project) {
+    public HttpDashboardForm(LocalizeValue tabName, Project project) {
         myTabName = tabName;
         myProject = project;
 
@@ -82,8 +83,7 @@ public class HttpDashboardForm implements Disposable {
 
         byte[] reqBytes = String.join("", httpInfo.getHttpReqDescList()).getBytes(StandardCharsets.UTF_8);
 
-        Editor reqEditor = HttpUiUtils.createEditor(reqBytes, "req.http", myProject, myTabName,
-            myEditorList, true, simpleTypeEnum, noLog);
+        Editor reqEditor = HttpUiUtils.createEditor(reqBytes, "req.http", myProject, myTabName, myEditorList, true, simpleTypeEnum, noLog);
 
         myRequestLayout.center(reqEditor.getUIComponent());
 
@@ -147,7 +147,7 @@ public class HttpDashboardForm implements Disposable {
         layout.right(toolbar.getUIComponent());
     }
 
-    private VirtualFile saveResponseToFile(HttpInfo httpInfo, String tabName, boolean noLog) {
+    private VirtualFile saveResponseToFile(HttpInfo httpInfo, LocalizeValue tabName, boolean noLog) {
         try {
             SimpleTypeEnum simpleTypeEnum = httpInfo.getType();
 
@@ -168,7 +168,7 @@ public class HttpDashboardForm implements Disposable {
 
             File dateHistoryDir = VirtualFileUtils.getDateHistoryDir(myProject);
 
-            File resBodyDir = new File(dateHistoryDir, tabName);
+            File resBodyDir = new File(dateHistoryDir, tabName.get());
             if (!resBodyDir.exists()) {
                 //noinspection ResultOfMethodCallIgnored
                 resBodyDir.mkdirs();

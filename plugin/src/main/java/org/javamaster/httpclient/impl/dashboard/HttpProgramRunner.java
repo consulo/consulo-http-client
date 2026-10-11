@@ -19,6 +19,7 @@ import consulo.execution.ui.RunContentDescriptor;
 import consulo.httpClient.localize.HttpClientLocalize;
 import consulo.process.ExecutionException;
 import consulo.project.Project;
+import consulo.ui.annotation.RequiredUIAccess;
 import consulo.virtualFileSystem.archive.ArchiveFileSystem;
 import org.javamaster.httpclient.impl.runconfig.HttpRunAllProfileState;
 import org.javamaster.httpclient.impl.runconfig.HttpRunConfiguration;
@@ -29,7 +30,7 @@ import org.javamaster.httpclient.impl.utils.NotifyUtil;
 import org.javamaster.httpclient.psi.HttpMethod;
 import org.javamaster.httpclient.utils.HttpUtilsPart;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 @ExtensionImpl
 public class HttpProgramRunner extends GenericProgramRunner<RunnerSettings> {
@@ -48,6 +49,7 @@ public class HttpProgramRunner extends GenericProgramRunner<RunnerSettings> {
         return DefaultRunExecutor.EXECUTOR_ID.equals(executorId);
     }
 
+    @RequiredUIAccess
     public void executeFromGutter(HttpMethod httpMethod) {
         if (!canRun(httpMethod)) {
             return;
@@ -106,23 +108,22 @@ public class HttpProgramRunner extends GenericProgramRunner<RunnerSettings> {
         Project project = httpMethod.getProject();
 
         if (ReadAction.compute(() -> httpMethod.getContainingFile().getVirtualFile().getFileSystem()) instanceof ArchiveFileSystem) {
-            NotifyUtil.notifyWarn(project, HttpClientLocalize.templateNotExecute().get());
+            NotifyUtil.notifyWarn(project, HttpClientLocalize.templateNotExecute());
             return false;
         }
 
         // tab name is used as a file name, so it must be checked
         String tabNameError = HttpUtilsPart.getTabNameError(ReadAction.compute(() -> HttpUtilsPart.getTabName(httpMethod)));
         if (tabNameError != null) {
-            NotifyUtil.notifyError(project, HttpClientLocalize.tabNameError(tabNameError).get());
+            NotifyUtil.notifyError(project, HttpClientLocalize.tabNameError(tabNameError));
             return false;
         }
 
         return true;
     }
 
-    @Nullable
     @Override
-    protected RunContentDescriptor doExecute(@NotNull RunProfileState state, @NotNull ExecutionEnvironment environment) {
+    protected @Nullable RunContentDescriptor doExecute(@NotNull RunProfileState state, @NotNull ExecutionEnvironment environment) {
         if (!(state instanceof HttpRunProfileState) && !(state instanceof HttpRunAllProfileState)) {
             return null;
         }

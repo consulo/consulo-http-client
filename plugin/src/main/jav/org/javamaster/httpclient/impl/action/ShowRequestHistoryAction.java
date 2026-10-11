@@ -1,5 +1,8 @@
 package org.javamaster.httpclient.impl.action;
 
+import consulo.httpClient.localize.HttpClientLocalize;
+import consulo.localize.LocalizeValue;
+import consulo.ui.annotation.RequiredUIAccess;
 import consulo.ui.ex.action.ActionUpdateThread;
 import consulo.ui.ex.action.AnAction;
 import consulo.ui.ex.action.AnActionEvent;
@@ -29,7 +32,7 @@ import static com.intellij.openapi.application.EDTKt.runInEdt;
 @SuppressWarnings("ActionPresentationInstantiatedInCtor")
 public class ShowRequestHistoryAction extends AnAction {
     public ShowRequestHistoryAction() {
-        super(NlsBundle.message("show.req.history"), null, HttpIcons.HISTORY);
+        super(HttpClientLocalize.showReqHistory(), LocalizeValue.empty(), HttpIcons.HISTORY);
     }
 
     @Override
@@ -47,6 +50,7 @@ public class ShowRequestHistoryAction extends AnAction {
     }
 
     @Override
+    @RequiredUIAccess
     public void actionPerformed(AnActionEvent e) {
         HttpRequestBlock requestBlock = ConvertToCurlAndCpAction.findRequestBlock(e);
         if (requestBlock == null) return;
@@ -57,7 +61,7 @@ public class ShowRequestHistoryAction extends AnAction {
         String method = request.getMethod().getText();
         if (method.equals(HttpRequestEnum.WEBSOCKET.name())
                 || method.equals(HttpRequestEnum.DUBBO.name())) {
-            NotifyUtil.notifyWarn(project, NlsBundle.message("convert.not.supported"));
+            NotifyUtil.notifyWarn(project, HttpClientLocalize.convertNotSupported());
             return;
         }
 
@@ -68,7 +72,7 @@ public class ShowRequestHistoryAction extends AnAction {
 
         File[] listFiles = bodyFilesFolder.listFiles();
         if (listFiles == null) {
-            NotifyUtil.notifyWarn(project, NlsBundle.message("no.res.body.files"));
+            NotifyUtil.notifyWarn(project, HttpClientLocalize.noResBodyFiles());
             return;
         }
 
@@ -98,7 +102,7 @@ public class ShowRequestHistoryAction extends AnAction {
                 });
             });
         } catch (Exception e2) {
-            NotifyUtil.notifyError(project, e2.toString());
+            NotifyUtil.notifyError(project, LocalizeValue.of(e2));
         }
     }
 

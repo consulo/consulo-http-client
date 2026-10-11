@@ -11,6 +11,7 @@ import consulo.language.Language;
 import consulo.language.editor.structureView.PsiStructureViewFactory;
 import consulo.language.editor.structureView.StructureViewModelBase;
 import consulo.language.psi.PsiFile;
+import consulo.localize.LocalizeValue;
 import jakarta.annotation.Nonnull;
 import org.javamaster.httpclient.HttpLanguage;
 import org.jetbrains.annotations.NotNull;
@@ -18,7 +19,6 @@ import org.jetbrains.annotations.Nullable;
 
 @ExtensionImpl
 public class HttpRequestStructureViewFactory implements PsiStructureViewFactory {
-
     @NotNull
     @Override
     public StructureViewBuilder getStructureViewBuilder(@NotNull PsiFile psiFile) {
@@ -26,7 +26,11 @@ public class HttpRequestStructureViewFactory implements PsiStructureViewFactory 
             @NotNull
             @Override
             public StructureViewModel createStructureViewModel(@Nullable Editor editor) {
-                StructureViewTreeElement root = HttpRequestStructureViewElement.create(psiFile, "Http Request", null);
+                StructureViewTreeElement root = HttpRequestStructureViewElement.create(
+                    psiFile,
+                    LocalizeValue.localizeTODO("Http Request"),
+                    null
+                );
                 return new HttpClientViewModel(psiFile, editor, root);
             }
         };

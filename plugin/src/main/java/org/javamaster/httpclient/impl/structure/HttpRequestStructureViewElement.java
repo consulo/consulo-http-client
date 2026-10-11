@@ -1,31 +1,35 @@
 package org.javamaster.httpclient.impl.structure;
 
+import consulo.annotation.access.RequiredReadAction;
 import consulo.codeEditor.CodeInsightColors;
 import consulo.colorScheme.TextAttributesKey;
 import consulo.component.util.Iconable;
 import consulo.document.util.TextRange;
 import consulo.fileEditor.structureView.StructureViewTreeElement;
+import consulo.httpClient.localize.HttpClientLocalize;
 import consulo.language.editor.structureView.PsiTreeElementBase;
 import consulo.language.icon.IconDescriptorUpdaters;
 import consulo.language.inject.InjectedLanguageManager;
 import consulo.language.psi.PsiElement;
 import consulo.language.psi.PsiFile;
+import consulo.localize.LocalizeValue;
 import consulo.platform.base.icon.PlatformIconGroup;
 import consulo.project.Project;
 import consulo.httpClient.icon.HttpClientIconGroup;
 import consulo.ui.ex.ColoredItemPresentation;
 import consulo.ui.image.Image;
+import consulo.util.collection.ContainerUtil;
 import consulo.util.lang.Pair;
 import consulo.util.lang.StringUtil;
 import org.javamaster.httpclient.HttpIcons;
-import org.javamaster.httpclient.NlsBundle;
 import org.javamaster.httpclient.parser.HttpFile;
 import org.javamaster.httpclient.psi.HttpContentType;
 import org.javamaster.httpclient.psi.HttpMessageBody;
+import org.javamaster.httpclient.psi.HttpMethod;
 import org.javamaster.httpclient.psi.HttpRequestBlock;
 import org.javamaster.httpclient.psi.impl.HttpPsiImplUtil;
 import org.javamaster.httpclient.utils.HttpUtilsPart;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 
@@ -40,14 +44,14 @@ public class HttpRequestStructureViewElement extends PsiTreeElementBase<PsiEleme
         "image/tiff"
     ));
 
-    private final String myPresentationText;
+    private final LocalizeValue myPresentationText;
     private final String myLocation;
     private final Image myIcon;
     private final boolean myIsValid;
 
     private HttpRequestStructureViewElement(
         PsiElement element,
-        String presentationText,
+        LocalizeValue presentationText,
         String location,
         Image icon,
         boolean isValid
@@ -60,10 +64,10 @@ public class HttpRequestStructureViewElement extends PsiTreeElementBase<PsiEleme
     }
 
     @Override
+    @RequiredReadAction
     public Collection<StructureViewTreeElement> getChildrenBase() {
         PsiElement element = getElement();
-        if (element instanceof HttpFile) {
-            HttpFile httpFile = (HttpFile) element;
+        if (element instanceof HttpFile httpFile) {
             List<HttpRequestBlock> blocks = httpFile.getRequestBlocks();
             if (blocks.isEmpty()) {
                 return Collections.emptyList();
@@ -72,20 +76,18 @@ public class HttpRequestStructureViewElement extends PsiTreeElementBase<PsiEleme
             List<StructureViewTreeElement> children = new ArrayList<>();
             var globalHandler = httpFile.getGlobalHandler();
             if (globalHandler != null) {
-                children.add(create(globalHandler, NlsBundle.message("global.handler"), HttpClientIconGroup.playfirst()));
+                children.add(create(globalHandler, HttpClientLocalize.globalHandler(), HttpClientIconGroup.playfirst()));
             }
 
             var globalVariables = httpFile.getGlobalVariables();
             for (var globalVariable : globalVariables) {
-                children.add(
-                    create(
-                        globalVariable,
-                        NlsBundle.message("global.variable"),
-                        globalVariable.getText(),
-                        PlatformIconGroup.generalInlinevariables(),
-                        true
-                    )
-                );
+                children.add(create(
+                    globalVariable,
+                    HttpClientLocalize.globalVariable(),
+                    globalVariable.getText(),
+                    PlatformIconGroup.generalInlinevariables(),
+                    true
+                ));
             }
 
             for (HttpRequestBlock block : blocks) {
@@ -94,8 +96,8 @@ public class HttpRequestStructureViewElement extends PsiTreeElementBase<PsiEleme
             }
             return children;
         }
-        else if (element instanceof HttpRequestBlock) {
-            return getChildren((HttpRequestBlock) element);
+        else if (element instanceof HttpRequestBlock requestBlock) {
+            return getChildren(requestBlock);
         }
 
         return Collections.emptyList();
@@ -119,38 +121,33 @@ public class HttpRequestStructureViewElement extends PsiTreeElementBase<PsiEleme
     }
 
     @Override
-    public String getPresentableText() {
+    public LocalizeValue getPresentableText() {
         return myPresentationText;
     }
 
-    @Nullable
     @Override
-    public Image getIcon() {
+    @RequiredReadAction
+    public @Nullable Image getIcon() {
         return myIcon != null ? myIcon : super.getIcon();
     }
 
-    public static StructureViewTreeElement create(PsiElement element, String text, Image icon) {
+    public static StructureViewTreeElement create(PsiElement element, LocalizeValue text, Image icon) {
         return create(element, text, null, icon);
     }
 
-    public static StructureViewTreeElement create(
-        PsiElement element,
-        String text,
-        String location,
-        Image icon
-    ) {
+    public static StructureViewTreeElement create(PsiElement element, LocalizeValue text, String location, Image icon) {
         return new HttpRequestStructureViewElement(
             element,
-            StringUtil.notNullize(text, NlsBundle.message("not.defined")),
+            text.orIfEmpty(HttpClientLocalize.notDefined()),
             location,
             icon,
-            StringUtil.isNotEmpty(text)
+            text.isNotEmpty()
         );
     }
 
     public static StructureViewTreeElement create(
         PsiElement element,
-        String text,
+        LocalizeValue text,
         String location,
         Image icon,
         boolean isValid
@@ -158,6 +155,7 @@ public class HttpRequestStructureViewElement extends PsiTreeElementBase<PsiEleme
         return new HttpRequestStructureViewElement(element, text, location, icon, isValid);
     }
 
+    @RequiredReadAction
     private static List<StructureViewTreeElement> getChildren(HttpRequestBlock block) {
         List<StructureViewTreeElement> children = new ArrayList<>();
         var request = block.getRequest();
@@ -168,36 +166,37 @@ public class HttpRequestStructureViewElement extends PsiTreeElementBase<PsiEleme
 
         var preRequestHandler = block.getPreRequestHandler();
         if (preRequestHandler != null) {
-            children.add(create(preRequestHandler, NlsBundle.message("pre.handler"), HttpClientIconGroup.playfirst()));
+            children.add(create(preRequestHandler, HttpClientLocalize.preHandler(), HttpClientIconGroup.playfirst()));
         }
 
         StringBuilder location = new StringBuilder();
-        location.append(StringUtil.notNullize(path, NlsBundle.message("not.defined")));
+        location.append(StringUtil.notNullize(path, HttpClientLocalize.notDefined().get()));
 
-        String tabName;
-        var method = request.getMethod();
-        tabName = HttpUtilsPart.getTabName(method);
+        HttpMethod method = request.getMethod();
+        LocalizeValue tabName = HttpUtilsPart.getTabName(method);
 
         Image icon = HttpUtilsPart.pickMethodIcon(method.getText());
 
-        children.add(
-            create(request, tabName, location.toString(), icon, StringUtil.isNotEmpty(originalHost))
-        );
+        children.add(create(request, tabName, location.toString(), icon, StringUtil.isNotEmpty(originalHost)));
 
         var body = request.getBody();
         var messagesGroup = body != null ? body.getRequestMessagesGroup() : null;
         if (messagesGroup != null) {
-            String mimeType = NlsBundle.message("not.defined");
+            LocalizeValue mimeType = HttpClientLocalize.notDefined();
             HttpContentType contentType = request.getContentType();
             if (contentType != null) {
-                mimeType = contentType.mimeType();
+                mimeType = LocalizeValue.of(contentType.mimeType());
             }
 
             Image bodyIcon = contentType != null && isImageType(contentType.mimeType()) ?
                 HttpIcons.IMAGE :
                 getInjectedLanguageIcon(project, messagesGroup.getMessageBody());
 
-            children.add(create(messagesGroup, NlsBundle.message("request.body") + " " + mimeType, bodyIcon));
+            children.add(create(
+                messagesGroup,
+                LocalizeValue.join(HttpClientLocalize.requestBody(), LocalizeValue.space(), mimeType),
+                bodyIcon
+            ));
         }
 
         var multipartMessage = body != null ? body.getMultipartMessage() : null;
@@ -213,23 +212,33 @@ public class HttpRequestStructureViewElement extends PsiTreeElementBase<PsiEleme
                     }
                 }
 
-                String mimeType = NlsBundle.message("not.defined");
+                LocalizeValue mimeType = HttpClientLocalize.notDefined();
                 HttpContentType contentType = multipartField.getContentType();
                 if (contentType != null) {
-                    mimeType = contentType.mimeType();
+                    mimeType = LocalizeValue.of(contentType.mimeType());
                 }
 
-                Image multiIcon = isImageType(contentType.mimeType()) ?
-                    HttpIcons.IMAGE :
-                    getInjectedLanguageIcon(project, multipartField.getRequestMessagesGroup().getMessageBody());
+                Image multiIcon = isImageType(contentType.mimeType())
+                    ? HttpIcons.IMAGE
+                    : getInjectedLanguageIcon(project, multipartField.getRequestMessagesGroup().getMessageBody());
 
-                children.add(create(multipartField, NlsBundle.message("multipart.field") + ": " + name + " " + mimeType, multiIcon));
+                children.add(create(
+                    multipartField,
+                    LocalizeValue.join(
+                        HttpClientLocalize.multipartField(),
+                        LocalizeValue.of(": "),
+                        LocalizeValue.of(name),
+                        LocalizeValue.space(),
+                        mimeType
+                    ),
+                    multiIcon
+                ));
             }
         }
 
         var responseHandler = request.getResponseHandler();
         if (responseHandler != null) {
-            children.add(create(responseHandler, NlsBundle.message("response.handler"), HttpClientIconGroup.playfirst()));
+            children.add(create(responseHandler, HttpClientLocalize.responseHandler(), HttpClientIconGroup.playfirst()));
         }
 
         return children;
@@ -239,8 +248,8 @@ public class HttpRequestStructureViewElement extends PsiTreeElementBase<PsiEleme
         return contentType != null && imageContentSet.contains(contentType);
     }
 
-    @Nullable
-    private static Image getInjectedLanguageIcon(Project project, HttpMessageBody messageBody) {
+    @RequiredReadAction
+    private static @Nullable Image getInjectedLanguageIcon(Project project, HttpMessageBody messageBody) {
         if (messageBody == null) {
             return null;
         }
@@ -248,12 +257,10 @@ public class HttpRequestStructureViewElement extends PsiTreeElementBase<PsiEleme
         InjectedLanguageManager injectedLanguageManager = InjectedLanguageManager.getInstance(project);
         List<Pair<PsiElement, TextRange>> files =
             injectedLanguageManager.getInjectedPsiFiles(messageBody);
-        if (files == null || files.isEmpty()) {
+        if (ContainerUtil.isEmpty(files)) {
             return null;
         }
 
-        PsiElement psiElement = files.get(0).getFirst();
-        PsiFile psiFile = psiElement instanceof PsiFile ? (PsiFile) psiElement : null;
-        return psiFile != null ? IconDescriptorUpdaters.getIcon(psiFile, Iconable.ICON_FLAG_VISIBILITY) : null;
+        return files.get(0).getFirst() instanceof PsiFile file ? IconDescriptorUpdaters.getIcon(file, Iconable.ICON_FLAG_VISIBILITY) : null;
     }
 }

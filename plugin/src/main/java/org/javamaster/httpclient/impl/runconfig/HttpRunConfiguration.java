@@ -6,6 +6,7 @@ import consulo.execution.configuration.ui.SettingsEditor;
 import consulo.execution.executor.Executor;
 import consulo.execution.runner.ExecutionEnvironment;
 import consulo.httpClient.localize.HttpClientLocalize;
+import consulo.localize.LocalizeValue;
 import consulo.project.Project;
 import consulo.util.dataholder.Key;
 import org.javamaster.httpclient.parser.HttpFile;
@@ -33,7 +34,7 @@ public class HttpRunConfiguration extends LocatableConfigurationBase implements 
 
     private String httpFilePath = "";
     private String env = "";
-    private String requestName = "";
+    private LocalizeValue requestName = LocalizeValue.empty();
     private boolean runAll;
 
     public HttpRunConfiguration(Project project, ConfigurationFactory httpConfigurationFactory, String name) {
@@ -63,12 +64,12 @@ public class HttpRunConfiguration extends LocatableConfigurationBase implements 
     }
 
     @Override
-    public String getRequestName() {
+    public LocalizeValue getRequestName() {
         // configurations saved before the request name was stored are bound by their own name
-        return requestName.isEmpty() ? getName() : requestName;
+        return requestName.isEmpty() ? LocalizeValue.of(getName()) : requestName;
     }
 
-    public void setRequestName(String requestName) {
+    public void setRequestName(LocalizeValue requestName) {
         this.requestName = requestName;
     }
 
@@ -88,7 +89,7 @@ public class HttpRunConfiguration extends LocatableConfigurationBase implements 
         if (runAll) {
             return httpFilePath.isEmpty() ? null : new File(httpFilePath).getName();
         }
-        return requestName.isEmpty() ? null : requestName;
+        return requestName.isEmpty() ? null : requestName.get();
     }
 
     @Override
@@ -139,7 +140,7 @@ public class HttpRunConfiguration extends LocatableConfigurationBase implements 
         element.addContent(pathEle);
 
         Element requestNameEle = new Element(REQUEST_NAME_KEY);
-        requestNameEle.setText(requestName);
+        requestNameEle.setText(requestName.get());
         element.addContent(requestNameEle);
 
         Element runAllEle = new Element(RUN_ALL_KEY);
@@ -160,7 +161,7 @@ public class HttpRunConfiguration extends LocatableConfigurationBase implements 
         httpFilePath = pathChild != null ? pathChild.getText() : "";
 
         Element requestNameChild = element.getChild(REQUEST_NAME_KEY);
-        requestName = requestNameChild != null ? requestNameChild.getText() : "";
+        requestName = requestNameChild != null ? LocalizeValue.of(requestNameChild.getText()) : LocalizeValue.empty();
 
         Element runAllChild = element.getChild(RUN_ALL_KEY);
         runAll = runAllChild != null && Boolean.parseBoolean(runAllChild.getText());

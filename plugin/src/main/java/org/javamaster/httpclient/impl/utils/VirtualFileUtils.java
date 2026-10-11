@@ -1,13 +1,14 @@
 package org.javamaster.httpclient.impl.utils;
 
+import consulo.annotation.access.RequiredWriteAction;
 import consulo.document.FileDocumentManager;
+import consulo.httpClient.localize.HttpClientLocalize;
 import consulo.language.file.light.LightVirtualFile;
+import consulo.localize.LocalizeValue;
 import consulo.project.Project;
 import consulo.virtualFileSystem.VirtualFile;
 import consulo.virtualFileSystem.util.VirtualFileUtil;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
-import org.javamaster.httpclient.NlsBundle;
 import org.javamaster.httpclient.impl.enums.InnerVariableEnum;
 
 import java.io.File;
@@ -35,7 +36,7 @@ public class VirtualFileUtils {
         }
 
         if (file.isDirectory()) {
-            throw new IllegalArgumentException(NlsBundle.message("not.file", absolutePath));
+            throw new IllegalArgumentException(HttpClientLocalize.notFile(absolutePath).get());
         }
 
         return Files.readAllBytes(file.toPath());
@@ -43,7 +44,7 @@ public class VirtualFileUtils {
 
     private static byte[] readNewestBytes(VirtualFile virtualFile) throws IOException {
         if (virtualFile.isDirectory()) {
-            throw new IllegalArgumentException(NlsBundle.message("not.file", virtualFile.getPath()));
+            throw new IllegalArgumentException(HttpClientLocalize.notFile(virtualFile.getPath()).get());
         }
 
         var document = FileDocumentManager.getInstance().getCachedDocument(virtualFile);
@@ -67,7 +68,7 @@ public class VirtualFileUtils {
         }
 
         if (file.isDirectory()) {
-            throw new IllegalArgumentException(NlsBundle.message("not.file", absolutePath));
+            throw new IllegalArgumentException(HttpClientLocalize.notFile(absolutePath).get());
         }
 
         return Files.readString(file.toPath());
@@ -75,7 +76,7 @@ public class VirtualFileUtils {
 
     public static String readNewestContent(VirtualFile virtualFile) throws IOException {
         if (virtualFile.isDirectory()) {
-            throw new IllegalArgumentException(NlsBundle.message("not.file", virtualFile.getPath()));
+            throw new IllegalArgumentException(HttpClientLocalize.notFile(virtualFile.getPath()).get());
         }
 
         var document = FileDocumentManager.getInstance().getCachedDocument(virtualFile);
@@ -101,16 +102,17 @@ public class VirtualFileUtils {
         return parentDir;
     }
 
+    @RequiredWriteAction
     public static VirtualFile createHttpVirtualFileFromText(
         byte[] txtBytes,
         String suffix,
         Project project,
-        String tabName,
+        LocalizeValue tabName,
         boolean noLog
     ) throws IOException {
         File parentDir = getDateHistoryDir(project);
 
-        String str = StringUtils.defaultString(tabName) + "-" + DateFormatUtils.format(new Date(), "hhmmss");
+        String str = tabName.get() + "-" + DateFormatUtils.format(new Date(), "hhmmss");
         Path path = Path.of(parentDir.toString(), "tmp-" + str + "." + suffix);
 
         if (noLog) {
@@ -134,11 +136,8 @@ public class VirtualFileUtils {
         return virtualFile;
     }
 
-    public static VirtualFile createHistoryHttpVirtualFile(
-        String content,
-        Project project,
-        String tabName
-    ) throws IOException {
+    @RequiredWriteAction
+    public static VirtualFile createHistoryHttpVirtualFile(String content, Project project, String tabName) throws IOException {
         File parentDir = getDateHistoryDir(project);
 
         Path path = Path.of(parentDir.toString(), tabName + "-history.http");

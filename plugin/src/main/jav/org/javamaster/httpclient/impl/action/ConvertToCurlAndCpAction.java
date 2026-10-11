@@ -1,6 +1,8 @@
 package org.javamaster.httpclient.impl.action;
 
 import consulo.codeEditor.hint.HintManager;
+import consulo.httpClient.localize.HttpClientLocalize;
+import consulo.localize.LocalizeValue;
 import consulo.platform.base.icon.PlatformIconGroup;
 import consulo.ui.ex.action.ActionUpdateThread;
 import consulo.ui.ex.action.AnAction;
@@ -24,7 +26,7 @@ import java.awt.datatransfer.StringSelection;
 @SuppressWarnings("ActionPresentationInstantiatedInCtor")
 public class ConvertToCurlAndCpAction extends AnAction {
     public ConvertToCurlAndCpAction() {
-        super(NlsBundle.message("convert.to.curl.cp"), null, PlatformIconGroup.generalInlineCopy);
+        super(HttpClientLocalize.convertToCurlCp(), LocalizeValue.empty(), PlatformIconGroup.generalInlineCopy);
     }
 
     @Override
@@ -68,7 +70,7 @@ public class ConvertToCurlAndCpAction extends AnAction {
         String method = requestBlock.getRequest().getMethod().getText();
         if (method.equals(HttpRequestEnum.WEBSOCKET.name())
                 || method.equals(HttpRequestEnum.DUBBO.name())) {
-            NotifyUtil.notifyWarn(project, NlsBundle.message("convert.not.supported"));
+            NotifyUtil.notifyWarn(project, HttpClientLocalize.convertNotSupported());
             return;
         }
 
@@ -83,10 +85,10 @@ public class ConvertToCurlAndCpAction extends AnAction {
                     str = it;
                 }
 
-                HintManager.getInstance().showInformationHint(editor, NlsBundle.message("converted.tip") + "\n" + str);
+                HintManager.getInstance().showInformationHint(editor, HttpClientLocalize.convertedTip().get() + "\n" + str);
             });
         } catch (Exception e) {
-            NotifyUtil.notifyError(project, e.toString());
+            NotifyUtil.notifyError(project, LocalizeValue.of(e));
         }
     }
 }

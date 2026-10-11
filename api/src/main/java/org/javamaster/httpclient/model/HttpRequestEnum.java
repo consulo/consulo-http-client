@@ -8,6 +8,7 @@ import consulo.http.HttpRequestBuilder;
 import consulo.http.HttpRequestBuilderFactory;
 import consulo.http.HttpVersion;
 import consulo.httpClient.localize.HttpClientLocalize;
+import consulo.localize.LocalizeValue;
 import consulo.project.Project;
 import consulo.ui.annotation.RequiredUIAccess;
 import consulo.ui.image.Image;
@@ -53,7 +54,7 @@ public enum HttpRequestEnum {
                                                    LinkedMultiValueMap<String, String> reqHttpHeaders,
                                                    Object reqBody,
                                                    List<String> httpReqDescList,
-                                                   String tabName,
+                                                   LocalizeValue tabName,
                                                    Map<String, String> paramMap) {
         try {
             Application application = Application.get();

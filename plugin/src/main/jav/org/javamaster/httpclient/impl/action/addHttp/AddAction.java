@@ -1,8 +1,10 @@
 package org.javamaster.httpclient.impl.action.addHttp;
 
+import consulo.httpClient.localize.HttpClientLocalize;
 import consulo.language.editor.template.TemplateManager;
 import consulo.language.editor.template.impl.TemplateSettings;
 import consulo.ide.impl.idea.ide.impl.ProjectUtil;
+import consulo.localize.LocalizeValue;
 import consulo.ui.ex.action.ActionUpdateThread;
 import consulo.ui.ex.action.AnAction;
 import consulo.document.Document;
@@ -63,14 +65,17 @@ public abstract class AddAction extends AnAction {
 
         VirtualFile envFile = EnvFileService.Companion.createEnvFile(envFileName, isPrivate, project);
         if (envFile == null) {
-            NotifyUtil.notifyWarn(project, envFileName + " " + NlsBundle.message("file.exists"));
+            NotifyUtil.notifyWarn(project, LocalizeValue.join(envFileName, LocalizeValue.space(), HttpClientLocalize.fileExists());
             return;
         }
 
         FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
         fileEditorManager.openFile(envFile, true);
 
-        NotifyUtil.notifyInfo(project, NlsBundle.message("file.created") + " " + envFileName);
+        NotifyUtil.notifyInfo(
+            project,
+            LocalizeValue.join(HttpClientLocalize.fileCreated(), LocalizeValue.space(), LocalizeValue.of(envFileName))
+        );
 
         try {
             var allEditors = fileEditorManager.getAllEditors();
