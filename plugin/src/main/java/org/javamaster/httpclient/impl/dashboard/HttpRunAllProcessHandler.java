@@ -46,7 +46,7 @@ public class HttpRunAllProcessHandler extends BaseProcessHandler {
     private final Disposable myListenerDisposable = Disposable.newDisposable();
 
     private int myIndex;
-    private @Nullable String myRunningTabName;
+    private LocalizeValue myRunningTabName = LocalizeValue.empty();
     private volatile @Nullable ExecutionEnvironment myRunningEnvironment;
     private volatile @Nullable ProcessHandler myRunningProcessHandler;
     private volatile boolean myStopped;
@@ -106,7 +106,7 @@ public class HttpRunAllProcessHandler extends BaseProcessHandler {
                 continue;
             }
 
-            String tabName = ReadAction.compute(() -> HttpUtilsPart.getTabName(httpMethod));
+            LocalizeValue tabName = ReadAction.compute(() -> HttpUtilsPart.getTabName(httpMethod));
 
             String methodName = ReadAction.compute(httpMethod::getText);
             if (UNSUPPORTED_METHODS.contains(methodName)) {
@@ -143,7 +143,7 @@ public class HttpRunAllProcessHandler extends BaseProcessHandler {
 
     @RequiredUIAccess
     private void requestFinished(boolean success) {
-        String tabName = myRunningTabName;
+        LocalizeValue tabName = myRunningTabName;
 
         myRunningTabName = null;
         myRunningEnvironment = null;
@@ -168,7 +168,7 @@ public class HttpRunAllProcessHandler extends BaseProcessHandler {
             .schedule(() -> uiAccess.give(this::runNext), THINK_TIME_SECONDS, TimeUnit.SECONDS);
     }
 
-    private void fail(@Nullable String tabName) {
+    private void fail(LocalizeValue tabName) {
         print(HttpClientLocalize.runAllFailed(tabName == null ? "" : tabName));
         finish(HttpUtils.FAILED);
     }

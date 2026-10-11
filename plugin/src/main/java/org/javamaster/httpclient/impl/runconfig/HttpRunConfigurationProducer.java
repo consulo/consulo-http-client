@@ -7,6 +7,7 @@ import consulo.execution.action.RunConfigurationProducer;
 import consulo.execution.configuration.ConfigurationTypeUtil;
 import consulo.language.psi.PsiElement;
 import consulo.language.psi.util.PsiTreeUtil;
+import consulo.localize.LocalizeValue;
 import consulo.util.lang.StringUtil;
 import consulo.util.lang.ref.SimpleReference;
 import consulo.virtualFileSystem.VirtualFile;
@@ -62,7 +63,7 @@ public class HttpRunConfigurationProducer extends RunConfigurationProducer<HttpR
             }
 
             configuration.setRunAll(true);
-            configuration.setRequestName("");
+            configuration.setRequestName(LocalizeValue.empty());
             sourceElement.set(httpFile);
         }
 

@@ -1,11 +1,13 @@
 package org.javamaster.httpclient.impl.utils;
 
+import consulo.annotation.access.RequiredWriteAction;
 import consulo.codeEditor.Editor;
 import consulo.codeEditor.EditorFactory;
 import consulo.codeEditor.EditorSettings;
 import consulo.language.psi.PsiDocumentManager;
 import consulo.language.psi.PsiFile;
 import consulo.language.psi.PsiUtilCore;
+import consulo.localize.LocalizeValue;
 import consulo.project.Project;
 import consulo.virtualFileSystem.VirtualFile;
 import org.javamaster.httpclient.impl.action.dashboard.DashboardBaseAction;
@@ -17,12 +19,12 @@ import java.io.IOException;
 import java.util.List;
 
 public class HttpUiUtils {
-
+    @RequiredWriteAction
     public static Editor createEditor(
         byte[] bytes,
         String suffix,
         Project project,
-        String tabName,
+        LocalizeValue tabName,
         List<Editor> editorList,
         boolean req,
         SimpleTypeEnum simpleTypeEnum,
@@ -61,11 +63,12 @@ public class HttpUiUtils {
         return editor;
     }
 
+    @RequiredWriteAction
     public static Editor createEditor(
         byte[] bytes,
         String suffix,
         Project project,
-        String tabName,
+        LocalizeValue tabName,
         List<Editor> editorList,
         boolean noLog
     ) {

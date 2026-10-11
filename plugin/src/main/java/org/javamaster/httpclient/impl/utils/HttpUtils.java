@@ -16,6 +16,7 @@ import consulo.language.editor.WriteCommandAction;
 import consulo.language.editor.refactoring.rename.RenameProcessor;
 import consulo.language.psi.*;
 import consulo.language.psi.util.PsiTreeUtil;
+import consulo.localize.LocalizeValue;
 import consulo.project.Project;
 import consulo.util.collection.ContainerUtil;
 import consulo.util.dataholder.Key;
@@ -297,9 +298,9 @@ public class HttpUtils extends HttpUtilsPart {
 
             String size = StringUtil.formatFileSize(byteArray.length);
 
-            String desc = HttpClientLocalize.binaryBodyDesc(size, file.getAbsolutePath()).get();
+            LocalizeValue desc = HttpClientLocalize.binaryBodyDesc(size, file.getAbsolutePath());
 
-            return Pair.create(byteArray, desc);
+            return Pair.create(byteArray, desc.get());
         }
     }
 

@@ -5,11 +5,13 @@ import com.google.gson.GsonBuilder;
 import consulo.annotation.access.RequiredReadAction;
 import consulo.execution.RunManager;
 import consulo.execution.RunnerAndConfigurationSettings;
+import consulo.httpClient.localize.HttpClientLocalize;
 import consulo.language.psi.PsiElement;
 import consulo.language.psi.PsiManager;
 import consulo.language.psi.PsiUtilCore;
 import consulo.language.psi.util.PsiTreeUtil;
 import consulo.language.util.ModuleUtilCore;
+import consulo.localize.LocalizeValue;
 import consulo.module.Module;
 import consulo.project.Project;
 import consulo.ui.image.Image;
@@ -18,7 +20,6 @@ import consulo.util.lang.StringUtil;
 import consulo.virtualFileSystem.VirtualFile;
 import consulo.virtualFileSystem.util.VirtualFileUtil;
 import org.javamaster.httpclient.HttpIcons;
-import org.javamaster.httpclient.NlsBundle;
 import org.javamaster.httpclient.model.HttpRequestEnum;
 import org.javamaster.httpclient.parser.HttpFile;
 import org.javamaster.httpclient.psi.HttpComment;
@@ -87,7 +88,7 @@ public class HttpUtilsPart {
     }
 
     @RequiredReadAction
-    public static HttpMethod getTargetHttpMethod(String httpFilePath, String requestName, Project project) {
+    public static HttpMethod getTargetHttpMethod(String httpFilePath, LocalizeValue requestName, Project project) {
         HttpFile httpFile = findHttpFile(httpFilePath, project);
         if (httpFile == null) {
             return null;
@@ -97,13 +98,14 @@ public class HttpUtilsPart {
 
         return httpMethods.stream()
             .filter(it -> {
-                String tabName = getTabName(it);
+                LocalizeValue tabName = getTabName(it);
                 return requestName.equals(tabName);
             })
             .findFirst()
             .orElse(null);
     }
 
+    @RequiredReadAction
     public static Module getOriginalModule(HttpRequestTarget requestTarget) {
         Project project = requestTarget.getProject();
 
@@ -115,6 +117,7 @@ public class HttpUtilsPart {
         return ModuleUtilCore.findModuleForFile(virtualFile, project);
     }
 
+    @RequiredReadAction
     public static VirtualFile getOriginalFile(HttpRequestTarget requestTarget) {
         VirtualFile virtualFile = PsiUtilCore.getVirtualFile(requestTarget);
         if (!isFileInIdeaDir(virtualFile)) {
@@ -126,15 +129,16 @@ public class HttpUtilsPart {
             return null;
         }
 
-        String tabName = getTabName(httpMethod);
+        LocalizeValue tabName = getTabName(httpMethod);
 
         return getOriginalFile(requestTarget.getProject(), tabName);
     }
 
-    public static String getTabName(HttpMethod httpMethod) {
+    @RequiredReadAction
+    public static LocalizeValue getTabName(HttpMethod httpMethod) {
         HttpRequestBlock requestBlock = PsiTreeUtil.getParentOfType(httpMethod, HttpRequestBlock.class);
         if (requestBlock == null) {
-            return "HTTP Request #0";
+            return LocalizeValue.localizeTODO("HTTP Request #0");
         }
 
         HttpComment comment = requestBlock.getComment();
@@ -142,7 +146,7 @@ public class HttpUtilsPart {
             String text = comment.getText();
             String tabName = text.substring(3).trim();
             if (!tabName.isEmpty()) {
-                return tabName;
+                return LocalizeValue.of(tabName);
             }
         }
 
@@ -151,11 +155,11 @@ public class HttpUtilsPart {
 
         for (int index = 0; index < requestBlocks.size(); index++) {
             if (requestBlock.equals(requestBlocks.get(index))) {
-                return "HTTP Request #" + (index + 1);
+                return LocalizeValue.localizeTODO("HTTP Request #" + (index + 1));
             }
         }
 
-        return "HTTP Request #0";
+        return LocalizeValue.localizeTODO("HTTP Request #0");
     }
 
     /**
@@ -163,13 +167,14 @@ public class HttpUtilsPart {
      *
      * @return why the tab name can't be used, or null when it can
      */
-    public static @Nullable String getTabNameError(String tabName) {
-        if (tabName.contains("/") || tabName.contains("\\")) {
+    public static @Nullable String getTabNameError(LocalizeValue tabName) {
+        String tabNameStr = tabName.get();
+        if (tabNameStr.contains("/") || tabNameStr.contains("\\")) {
             return "Illegal char: / \\";
         }
 
         try {
-            Path.of(tabName);
+            Path.of(tabNameStr);
             return null;
         }
         catch (InvalidPathException e) {
@@ -177,12 +182,14 @@ public class HttpUtilsPart {
         }
     }
 
-    public static VirtualFile getOriginalFile(Project project, String tabName) {
+    public static VirtualFile getOriginalFile(Project project, LocalizeValue tabName) {
         RunManager runManager = RunManager.getInstance(project);
         RunnerAndConfigurationSettings configurationSettings = runManager.getAllSettings()
             .stream()
-            .filter(it -> it.getConfiguration() instanceof HttpRunConfigurationApi api
-                && api.getRequestName().equals(tabName))
+            .filter(
+                it -> it.getConfiguration() instanceof HttpRunConfigurationApi api
+                    && api.getRequestName().equals(tabName.get())
+            )
             .findFirst()
             .orElse(null);
 
@@ -205,6 +212,7 @@ public class HttpUtilsPart {
         }
     }
 
+    @RequiredReadAction
     public static PsiElement resolveFilePath(String path, String httpFileParentPath, Project project) {
         String filePath = constructFilePath(path, httpFileParentPath);
 
@@ -229,7 +237,7 @@ public class HttpUtilsPart {
             String str = (String) reqBody;
             if (str.length() > maxSizeLimit) {
                 descList.add(
-                    str.substring(0, maxSizeLimit) + CR_LF + "......(" + NlsBundle.message("content.truncated") + ")"
+                    str.substring(0, maxSizeLimit) + CR_LF + "......(" + HttpClientLocalize.contentTruncated().get() + ")"
                 );
             }
             else {
@@ -250,7 +258,7 @@ public class HttpUtilsPart {
                 String desc = it.second;
 
                 String bodyDesc = desc.length() > maxSizeLimit
-                    ? desc + CR_LF + "......(" + NlsBundle.message("content.truncated") + ")" + CR_LF
+                    ? desc + CR_LF + "......(" + HttpClientLocalize.contentTruncated().get() + ")" + CR_LF
                     : desc;
 
                 descList.add(bodyDesc);

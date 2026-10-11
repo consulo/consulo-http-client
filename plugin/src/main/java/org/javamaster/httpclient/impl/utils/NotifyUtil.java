@@ -1,5 +1,6 @@
 package org.javamaster.httpclient.impl.utils;
 
+import consulo.localize.LocalizeValue;
 import consulo.project.Project;
 import consulo.project.ui.notification.NotificationDisplayType;
 import consulo.project.ui.notification.NotificationGroup;
@@ -16,19 +17,19 @@ public class NotifyUtil {
         new NotificationGroup("HttpClient.STICKY_BALLOON", NotificationDisplayType.STICKY_BALLOON, true);
     private static final String TOOL_WINDOW_ID = ToolWindowId.SERVICES;
 
-    public static void notifyInfo(Project project, String message) {
+    public static void notifyInfo(Project project, LocalizeValue message) {
         notifyServicesBalloon(project, message, consulo.ui.NotificationType.INFO);
     }
 
-    public static void notifyWarn(Project project, String message) {
+    public static void notifyWarn(Project project, LocalizeValue message) {
         notifyServicesBalloon(project, message, consulo.ui.NotificationType.WARNING);
     }
 
-    public static void notifyError(Project project, String message) {
+    public static void notifyError(Project project, LocalizeValue message) {
         notifyServicesBalloon(project, message, consulo.ui.NotificationType.ERROR);
     }
 
-    private static void notifyServicesBalloon(Project project, String message, consulo.ui.NotificationType type) {
+    private static void notifyServicesBalloon(Project project, LocalizeValue message, consulo.ui.NotificationType type) {
         ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(project);
 
         toolWindowManager.notifyByBalloon(TOOL_WINDOW_ID, type, "<div style='font-size:13pt'>" + message + "</div>");

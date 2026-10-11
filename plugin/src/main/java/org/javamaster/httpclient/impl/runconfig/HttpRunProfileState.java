@@ -1,9 +1,11 @@
 package org.javamaster.httpclient.impl.runconfig;
 
+import consulo.annotation.access.RequiredReadAction;
 import consulo.execution.ExecutionResult;
 import consulo.execution.configuration.RunProfileState;
 import consulo.execution.executor.Executor;
 import consulo.execution.runner.ProgramRunner;
+import consulo.localize.LocalizeValue;
 import consulo.project.Project;
 import org.javamaster.httpclient.impl.dashboard.HttpExecutionResult;
 import org.javamaster.httpclient.psi.HttpMethod;
@@ -15,13 +17,13 @@ import org.javamaster.httpclient.utils.HttpUtilsPart;
 public class HttpRunProfileState implements RunProfileState {
     private final Project project;
     private final String httpFilePath;
-    private final String requestName;
+    private final LocalizeValue requestName;
     private final String selectedEnv;
 
     public HttpRunProfileState(
         Project project,
         String httpFilePath,
-        String requestName,
+        LocalizeValue requestName,
         String selectedEnv
     ) {
         this.project = project;
@@ -31,12 +33,9 @@ public class HttpRunProfileState implements RunProfileState {
     }
 
     @Override
+    @RequiredReadAction
     public ExecutionResult execute(Executor executor, ProgramRunner runner) {
-        HttpMethod httpMethod = HttpUtilsPart.getTargetHttpMethod(
-            httpFilePath,
-            requestName,
-            project
-        );
+        HttpMethod httpMethod = HttpUtilsPart.getTargetHttpMethod(httpFilePath, requestName, project);
 
         if (httpMethod == null) {
             return null;

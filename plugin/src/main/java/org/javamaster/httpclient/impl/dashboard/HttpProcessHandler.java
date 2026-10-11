@@ -15,7 +15,6 @@ import consulo.ui.annotation.RequiredUIAccess;
 import consulo.util.lang.StringUtil;
 import consulo.util.lang.Trinity;
 import consulo.virtualFileSystem.VirtualFileManager;
-import org.javamaster.httpclient.NlsBundle;
 import org.javamaster.httpclient.env.EnvFileService;
 import org.javamaster.httpclient.impl.background.HttpBackground;
 import org.javamaster.httpclient.impl.js.JsExecutor;
@@ -36,6 +35,7 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CancellationException;
@@ -47,7 +47,7 @@ import java.util.concurrent.CompletableFuture;
 public class HttpProcessHandler extends BaseProcessHandler {
     public final HttpMethod httpMethod;
     private final String selectedEnv;
-    public final String tabName;
+    public final LocalizeValue tabName;
     public final Project project;
     public Integer httpStatus;
     public Long costTimes;
@@ -188,7 +188,7 @@ public class HttpProcessHandler extends BaseProcessHandler {
 
                 return new HttpReqInfo(reqBody, environment, preJsFiles);
             })
-            .finishOnUiThread(reqInfo -> startHandleRequest(reqInfo))
+            .finishOnUiThread(this::startHandleRequest)
             .exceptionallyOnUiThread(this::handleException);
     }
 
@@ -209,7 +209,7 @@ public class HttpProcessHandler extends BaseProcessHandler {
 
         List<String> beforeJsResList = jsExecutor.evalJsBeforeRequest(reqInfo.getPreJsFiles(), jsListBeforeReq);
 
-        java.util.List<String> httpReqDescList = new java.util.ArrayList<>();
+        List<String> httpReqDescList = new ArrayList<>();
         httpReqDescList.addAll(beforeJsResList);
 
         String url = variableResolver.resolve(requestTarget.getUrl());
@@ -416,7 +416,7 @@ public class HttpProcessHandler extends BaseProcessHandler {
 
     private void handleException(Exception e) {
         destroyProcess();
-        NotifyUtil.notifyError(project, "<div style='font-size:13pt'>" + e + "</div>");
+        NotifyUtil.notifyError(project, LocalizeValue.localizeTODO("<div style='font-size:13pt'>" + e + "</div>"));
     }
 
 //    private void handleWs(String url, LinkedMultiValueMap<String, String> reqHeaderMap) {
@@ -551,71 +551,69 @@ public class HttpProcessHandler extends BaseProcessHandler {
             methodType.execute(project, url, version, reqHeaderMap, reqBody, httpReqDescList, tabName, paramMap);
 
         future.whenCompleteAsync((response, throwable) -> {
-            Application.get().invokeLater(() -> {
-                Application.get().runWriteAction(() -> {
-                    try {
-                        httpStatus = response != null ? response.statusCode() : null;
-                        costTimes = System.currentTimeMillis() - start;
+            Application.get().invokeLater(() -> Application.get().runWriteAction(() -> {
+                try {
+                    httpStatus = response != null ? response.statusCode() : null;
+                    costTimes = System.currentTimeMillis() - start;
 
-                        if (throwable != null) {
-                            HttpInfo httpInfo = new HttpInfo(httpReqDescList, new java.util.ArrayList<>(), null, null, throwable);
-                            dealResponse(httpInfo, parentPath);
-                            return;
-                        }
-
-                        String size = StringUtil.formatFileSize(response.body().length);
-
-                        List<String> resHeaderList = HttpUtils.convertToResHeaderDescList(response);
-
-                        Trinity<SimpleTypeEnum, byte[], String> resTriple = HttpUtils.convertToResPair(response);
-
-                        String comment = HttpClientLocalize.resDesc(response.statusCode(), costTimes, size).get();
-
-                        java.util.List<String> httpResDescList = new java.util.ArrayList<>();
-                        httpResDescList.add("// " + comment + HttpUtils.CR_LF);
-
-                        String evalJsRes = jsExecutor.evalJsAfterRequest(
-                            jsAfterReq,
-                            resTriple,
-                            response.statusCode(),
-                            response.headers()
-                        );
-
-                        if (evalJsRes != null && !evalJsRes.isEmpty()) {
-                            httpResDescList.add("/*" + HttpUtils.CR_LF + HttpClientLocalize.postJsExecutedResult().get() + ":" + HttpUtils.CR_LF);
-                            httpResDescList.add(evalJsRes + HttpUtils.CR_LF);
-                            httpResDescList.add("*/" + HttpUtils.CR_LF);
-                        }
-
-                        String versionDesc = HttpUtils.getVersionDesc(response.version());
-
-                        String commentTabName = "### " + tabName + HttpUtils.CR_LF;
-                        httpResDescList.add(commentTabName);
-
-                        httpResDescList.add(methodType.name() + " " + response.uri() + " " + versionDesc + HttpUtils.CR_LF);
-
-                        httpResDescList.addAll(resHeaderList);
-
-                        if (resTriple.getFirst().isBinary()) {
-                            httpResDescList.add(NlsBundle.message("res.binary.data", size));
-                        }
-                        else {
-                            httpResDescList.add(new String(resTriple.getSecond(), StandardCharsets.UTF_8));
-                        }
-
-                        HttpInfo httpInfo = new HttpInfo(
-                            httpReqDescList, httpResDescList, resTriple.getFirst(), resTriple.getSecond(),
-                            null, resTriple.getThird()
-                        );
-
+                    if (throwable != null) {
+                        HttpInfo httpInfo = new HttpInfo(httpReqDescList, new ArrayList<>(), null, null, throwable);
                         dealResponse(httpInfo, parentPath);
+                        return;
                     }
-                    catch (Exception e) {
-                        e.printStackTrace();
-                        NotifyUtil.notifyError(this.project, e.toString());
+
+                    String size = StringUtil.formatFileSize(response.body().length);
+
+                    List<String> resHeaderList = HttpUtils.convertToResHeaderDescList(response);
+
+                    Trinity<SimpleTypeEnum, byte[], String> resTriple = HttpUtils.convertToResPair(response);
+
+                    LocalizeValue comment = HttpClientLocalize.resDesc(response.statusCode(), costTimes, size);
+
+                    List<String> httpResDescList = new ArrayList<>();
+                    httpResDescList.add("// " + comment.get() + HttpUtils.CR_LF);
+
+                    String evalJsRes = jsExecutor.evalJsAfterRequest(
+                        jsAfterReq,
+                        resTriple,
+                        response.statusCode(),
+                        response.headers()
+                    );
+
+                    if (evalJsRes != null && !evalJsRes.isEmpty()) {
+                        httpResDescList.add("/*" + HttpUtils.CR_LF + HttpClientLocalize.postJsExecutedResult().get() + ":" + HttpUtils.CR_LF);
+                        httpResDescList.add(evalJsRes + HttpUtils.CR_LF);
+                        httpResDescList.add("*/" + HttpUtils.CR_LF);
                     }
-                });
-            });
+
+                    String versionDesc = HttpUtils.getVersionDesc(response.version());
+
+                    String commentTabName = "### " + tabName + HttpUtils.CR_LF;
+                    httpResDescList.add(commentTabName);
+
+                    httpResDescList.add(methodType.name() + " " + response.uri() + " " + versionDesc + HttpUtils.CR_LF);
+
+                    httpResDescList.addAll(resHeaderList);
+
+                    if (resTriple.getFirst().isBinary()) {
+                        httpResDescList.add(HttpClientLocalize.resBinaryData(size).get());
+                    }
+                    else {
+                        httpResDescList.add(new String(resTriple.getSecond(), StandardCharsets.UTF_8));
+                    }
+
+                    HttpInfo httpInfo = new HttpInfo(
+                        httpReqDescList, httpResDescList, resTriple.getFirst(), resTriple.getSecond(),
+                        null, resTriple.getThird()
+                    );
+
+                    dealResponse(httpInfo, parentPath);
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                    NotifyUtil.notifyError(this.project, LocalizeValue.of(e));
+                }
+            }));
 
             destroyProcess();
         });
@@ -623,7 +621,7 @@ public class HttpProcessHandler extends BaseProcessHandler {
         cancelFutureIfTerminated(future);
     }
 
-    @RequiredReadAction
+    @RequiredUIAccess
     private void dealResponse(HttpInfo httpInfo, String parentPath) {
         HttpRequestTarget requestTargetLocal = PsiTreeUtil.getNextSiblingOfType(httpMethod, HttpRequestTarget.class);
 
@@ -731,7 +729,7 @@ public class HttpProcessHandler extends BaseProcessHandler {
     @Override
     protected void destroyProcessImpl() {
         if (loadingRemover != null) {
-            Application.get().invokeLater(() -> loadingRemover.run());
+            Application.get().invokeLater(loadingRemover::run);
         }
 
         /// TODO

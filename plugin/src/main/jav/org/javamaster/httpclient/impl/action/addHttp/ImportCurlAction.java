@@ -1,5 +1,6 @@
 package org.javamaster.httpclient.impl.action.addHttp;
 
+import consulo.localize.LocalizeValue;
 import consulo.ui.ex.action.AnActionEvent;
 import consulo.document.Document;
 import consulo.codeEditor.Editor;
@@ -66,7 +67,7 @@ public class ImportCurlAction extends AddAction {
                         try {
                             curlRequestTmp[0] = new CurlParser(str).parseToCurlRequest();
                         } catch (Exception ex) {
-                            NotifyUtil.notifyError(project, ex.toString());
+                            NotifyUtil.notifyError(project, LocalizeValue.of(ex));
                             return false;
                         }
 
