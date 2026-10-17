@@ -108,6 +108,10 @@ dubbo.requests:
     text: Dubbo requests
 edit:
     text: Edit
+endpoint.client.generator.title:
+    text: HTTP Client
+endpoint.generate.request.action:
+    text: Generate Request in HTTP Client
 env:
     text: 'env:'
 env.desc:

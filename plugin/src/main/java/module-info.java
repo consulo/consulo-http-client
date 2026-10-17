@@ -5,6 +5,7 @@
 module consulo.rest.client {
     requires consulo.rest.client.api;
     requires consulo.language.api;
+    requires consulo.endpoint.api;
     requires consulo.language.editor.api;
     requires consulo.execution.api;
     requires consulo.diff.api;
