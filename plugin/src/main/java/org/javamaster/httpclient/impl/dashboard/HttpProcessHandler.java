@@ -7,10 +7,10 @@ import consulo.language.psi.util.PsiTreeUtil;
 import consulo.localize.LocalizeValue;
 import consulo.process.BaseProcessHandler;
 import consulo.project.Project;
+import consulo.project.ui.notification.NotificationType;
 import consulo.project.ui.wm.ToolWindowId;
 import consulo.project.ui.wm.ToolWindowManager;
 import consulo.ui.Component;
-import consulo.ui.NotificationType;
 import consulo.ui.annotation.RequiredUIAccess;
 import consulo.util.lang.StringUtil;
 import consulo.util.lang.Trinity;
@@ -661,7 +661,7 @@ public class HttpProcessHandler extends BaseProcessHandler {
         }
         else {
             String msg = "<div style='font-size:13pt'>" + tabName + " " + HttpClientLocalize.requestSuccess() + "!</div>";
-            toolWindowManager.notifyByBalloon(ToolWindowId.SERVICES, NotificationType.INFO, msg);
+            toolWindowManager.notifyByBalloon(ToolWindowId.SERVICES, NotificationType.INFORMATION, msg);
         }
     }
 

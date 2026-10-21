@@ -18,18 +18,18 @@ public class NotifyUtil {
     private static final String TOOL_WINDOW_ID = ToolWindowId.SERVICES;
 
     public static void notifyInfo(Project project, LocalizeValue message) {
-        notifyServicesBalloon(project, message, consulo.ui.NotificationType.INFO);
+        notifyServicesBalloon(project, message, consulo.project.ui.notification.NotificationType.INFORMATION);
     }
 
     public static void notifyWarn(Project project, LocalizeValue message) {
-        notifyServicesBalloon(project, message, consulo.ui.NotificationType.WARNING);
+        notifyServicesBalloon(project, message, consulo.project.ui.notification.NotificationType.WARNING);
     }
 
     public static void notifyError(Project project, LocalizeValue message) {
-        notifyServicesBalloon(project, message, consulo.ui.NotificationType.ERROR);
+        notifyServicesBalloon(project, message, consulo.project.ui.notification.NotificationType.ERROR);
     }
 
-    private static void notifyServicesBalloon(Project project, LocalizeValue message, consulo.ui.NotificationType type) {
+    private static void notifyServicesBalloon(Project project, LocalizeValue message, consulo.project.ui.notification.NotificationType type) {
         ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(project);
 
         toolWindowManager.notifyByBalloon(TOOL_WINDOW_ID, type, "<div style='font-size:13pt'>" + message + "</div>");

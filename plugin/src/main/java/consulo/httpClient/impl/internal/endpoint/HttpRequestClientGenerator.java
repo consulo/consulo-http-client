@@ -8,6 +8,9 @@ import consulo.endpoint.oas.OasHttpMethod;
 import consulo.endpoint.oas.OasOperation;
 import consulo.endpoint.oas.OasParameter;
 import consulo.endpoint.oas.OasParameterIn;
+import consulo.endpoint.oas.OasRequestBody;
+import consulo.endpoint.oas.OasResponse;
+import consulo.endpoint.oas.OasSchema;
 import consulo.endpoint.oas.OpenApiSpecification;
 import consulo.httpClient.localize.HttpClientLocalize;
 import consulo.localize.LocalizeValue;
@@ -17,6 +20,7 @@ import org.jspecify.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,6 +31,8 @@ import java.util.regex.Pattern;
 @ExtensionImpl
 public final class HttpRequestClientGenerator implements ClientGenerator {
     public static final String DEFAULT_BASE_URL = "http://localhost:8080";
+
+    private static final String APPLICATION_JSON = "application/json";
 
     private static final Pattern PATH_VARIABLE = Pattern.compile("\\{([^}:/]+)(?::[^}]*)?}");
 
@@ -77,16 +83,34 @@ public final class HttpRequestClientGenerator implements ClientGenerator {
         }
         builder.append('\n');
 
-        builder.append("Accept: application/json\n");
+        builder.append("Accept: ").append(findAccept(operation)).append('\n');
         for (String header : headers) {
             builder.append(header).append('\n');
         }
 
-        if (operation.getRequestBody() != null || httpMethod == OasHttpMethod.POST || httpMethod == OasHttpMethod.PUT || httpMethod == OasHttpMethod.PATCH) {
-            builder.append("Content-Type: application/json\n");
+        OasRequestBody requestBody = operation.getRequestBody();
+        if (requestBody != null && !requestBody.getContent().isEmpty()) {
+            Map.Entry<String, OasSchema> content = requestBody.getContent().entrySet().iterator().next();
+            builder.append("Content-Type: ").append(content.getKey()).append('\n');
+            if (content.getKey().contains("json")) {
+                builder.append('\n');
+                builder.append(HttpRequestBodySampler.sample(content.getValue())).append('\n');
+            }
+        }
+        else if (requestBody != null || httpMethod == OasHttpMethod.POST || httpMethod == OasHttpMethod.PUT || httpMethod == OasHttpMethod.PATCH) {
+            builder.append("Content-Type: ").append(APPLICATION_JSON).append('\n');
             builder.append('\n');
             builder.append("{}\n");
         }
+    }
+
+    private static String findAccept(OasOperation operation) {
+        for (OasResponse response : operation.getResponses()) {
+            for (String contentType : response.getContent().keySet()) {
+                return contentType;
+            }
+        }
+        return APPLICATION_JSON;
     }
 
     private static String toTemplate(String path) {
