@@ -324,6 +324,8 @@ run.all.stopped:
     text: Running of the requests is stopped
 run.all.tooltip:
     text: Run all requests of the file(think time is 2 seconds)
+run.configuration.fragment.request:
+    text: Request
 save.failed:
     text: Save to file failed
 save.to.file:

@@ -26,4 +26,6 @@ module consulo.rest.client {
 
     requires com.google.gson;
     requires org.apache.commons.lang3;
-}                                                                               
+
+    opens org.javamaster.httpclient.impl.runconfig to consulo.util.xml.serializer, consulo.execution.api;
+}

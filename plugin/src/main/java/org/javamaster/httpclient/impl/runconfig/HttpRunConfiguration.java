@@ -2,13 +2,14 @@ package org.javamaster.httpclient.impl.runconfig;
 
 import consulo.application.ReadAction;
 import consulo.execution.configuration.*;
-import consulo.execution.configuration.ui.SettingsEditor;
+import consulo.execution.configuration.fragment.RunConfigurationFragment;
 import consulo.execution.executor.Executor;
 import consulo.execution.runner.ExecutionEnvironment;
 import consulo.httpClient.localize.HttpClientLocalize;
 import consulo.localize.LocalizeValue;
 import consulo.project.Project;
 import consulo.util.dataholder.Key;
+import consulo.util.lang.StringUtil;
 import org.javamaster.httpclient.parser.HttpFile;
 import org.javamaster.httpclient.run.HttpRunConfigurationApi;
 import org.javamaster.httpclient.utils.HttpUtilsPart;
@@ -16,6 +17,7 @@ import org.jdom.Element;
 import org.jspecify.annotations.Nullable;
 
 import java.io.File;
+import java.util.List;
 
 /**
  * @author yudong
@@ -32,69 +34,95 @@ public class HttpRunConfiguration extends LocatableConfigurationBase implements 
     private static final String REQUEST_NAME_KEY = "requestName";
     private static final String RUN_ALL_KEY = "runAll";
 
-    private String httpFilePath = "";
-    private String env = "";
-    private LocalizeValue requestName = LocalizeValue.empty();
-    private boolean runAll;
-
     public HttpRunConfiguration(Project project, ConfigurationFactory httpConfigurationFactory, String name) {
         super(project, httpConfigurationFactory, name);
     }
 
     @Override
+    protected Class<HttpRunConfigurationOptions> getOptionsClass() {
+        return HttpRunConfigurationOptions.class;
+    }
+
+    @Override
+    public HttpRunConfigurationOptions getOptions() {
+        return (HttpRunConfigurationOptions) super.getOptions();
+    }
+
+    @Override
+    protected void convertLegacyState(LegacyRunConfigurationConverter converter) {
+        super.convertLegacyState(converter);
+
+        Element element = converter.getElement();
+        HttpRunConfigurationOptions options = new HttpRunConfigurationOptions();
+        options.setEnv(element.getChildText(ENV_KEY));
+        options.setHttpFilePath(element.getChildText(PATH_KEY));
+        options.setRequestName(element.getChildText(REQUEST_NAME_KEY));
+        options.setRunAll(Boolean.parseBoolean(element.getChildText(RUN_ALL_KEY)));
+        converter.setOptions(options);
+    }
+
+    @Override
+    public List<RunConfigurationFragment<?>> createFragments() {
+        return List.of(new HttpRequestFragment());
+    }
+
+    @Override
     public String getHttpFilePath() {
-        return httpFilePath;
+        return StringUtil.notNullize(getOptions().getHttpFilePath());
     }
 
     public void setHttpFilePath(String httpFilePath) {
-        this.httpFilePath = httpFilePath;
+        getOptions().setHttpFilePath(httpFilePath);
     }
 
     public String getEnv() {
-        return env;
+        return StringUtil.notNullize(getOptions().getEnv());
     }
 
     public void setEnv(String env) {
-        this.env = env;
+        getOptions().setEnv(env);
     }
 
     public String getEnv(ExecutionEnvironment environment) {
         String runEnv = environment.getUserData(RUN_ENV_KEY);
-        return runEnv != null ? runEnv : env;
+        return runEnv != null ? runEnv : getEnv();
     }
 
     @Override
     public LocalizeValue getRequestName() {
         // configurations saved before the request name was stored are bound by their own name
-        return requestName.isEmpty() ? LocalizeValue.of(getName()) : requestName;
+        String requestName = getOptions().getRequestName();
+        return requestName == null ? LocalizeValue.of(getName()) : LocalizeValue.of(requestName);
     }
 
     public void setRequestName(LocalizeValue requestName) {
-        this.requestName = requestName;
+        getOptions().setRequestName(requestName.get());
     }
 
     /**
      * All requests of the file are run one by one, instead of the one of {@link #getRequestName()}
      */
     public boolean isRunAll() {
-        return runAll;
+        return getOptions().isRunAll();
     }
 
     public void setRunAll(boolean runAll) {
-        this.runAll = runAll;
+        getOptions().setRunAll(runAll);
     }
 
     @Override
     public @Nullable String suggestedName() {
-        if (runAll) {
+        if (isRunAll()) {
+            String httpFilePath = getHttpFilePath();
             return httpFilePath.isEmpty() ? null : new File(httpFilePath).getName();
         }
-        return requestName.isEmpty() ? null : requestName.get();
+        return getOptions().getRequestName();
     }
 
     @Override
     public void checkConfiguration() throws RuntimeConfigurationError {
-        if (runAll) {
+        String httpFilePath = getHttpFilePath();
+        if (isRunAll()) {
             boolean hasRequests = ReadAction.compute(() -> {
                 HttpFile httpFile = HttpUtilsPart.findHttpFile(httpFilePath, getProject());
                 return httpFile != null && !httpFile.getRequestBlocks().isEmpty();
@@ -118,52 +146,9 @@ public class HttpRunConfiguration extends LocatableConfigurationBase implements 
     @Override
     public RunProfileState getState(Executor executor, ExecutionEnvironment environment) {
         String runEnv = getEnv(environment);
-        if (runAll) {
-            return new HttpRunAllProfileState(getProject(), httpFilePath, runEnv);
+        if (isRunAll()) {
+            return new HttpRunAllProfileState(getProject(), getHttpFilePath(), runEnv);
         }
-        return new HttpRunProfileState(getProject(), httpFilePath, getRequestName(), runEnv);
-    }
-
-    @Override
-    public SettingsEditor<? extends RunConfiguration> getConfigurationEditor() {
-        return new HttpSettingsEditor(env, httpFilePath, getProject());
-    }
-
-    @Override
-    public void writeExternal(Element element) {
-        Element envEle = new Element(ENV_KEY);
-        envEle.setText(env);
-        element.addContent(envEle);
-
-        Element pathEle = new Element(PATH_KEY);
-        pathEle.setText(httpFilePath);
-        element.addContent(pathEle);
-
-        Element requestNameEle = new Element(REQUEST_NAME_KEY);
-        requestNameEle.setText(requestName.get());
-        element.addContent(requestNameEle);
-
-        Element runAllEle = new Element(RUN_ALL_KEY);
-        runAllEle.setText(String.valueOf(runAll));
-        element.addContent(runAllEle);
-
-        super.writeExternal(element);
-    }
-
-    @Override
-    public void readExternal(Element element) {
-        super.readExternal(element);
-
-        Element envChild = element.getChild(ENV_KEY);
-        env = envChild != null ? envChild.getText() : "";
-
-        Element pathChild = element.getChild(PATH_KEY);
-        httpFilePath = pathChild != null ? pathChild.getText() : "";
-
-        Element requestNameChild = element.getChild(REQUEST_NAME_KEY);
-        requestName = requestNameChild != null ? LocalizeValue.of(requestNameChild.getText()) : LocalizeValue.empty();
-
-        Element runAllChild = element.getChild(RUN_ALL_KEY);
-        runAll = runAllChild != null && Boolean.parseBoolean(runAllChild.getText());
+        return new HttpRunProfileState(getProject(), getHttpFilePath(), getRequestName(), runEnv);
     }
 }
