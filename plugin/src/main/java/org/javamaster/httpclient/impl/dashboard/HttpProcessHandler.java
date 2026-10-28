@@ -12,6 +12,7 @@ import consulo.project.ui.wm.ToolWindowId;
 import consulo.project.ui.wm.ToolWindowManager;
 import consulo.ui.Component;
 import consulo.ui.annotation.RequiredUIAccess;
+import consulo.ui.image.Image;
 import consulo.util.lang.StringUtil;
 import consulo.util.lang.Trinity;
 import consulo.virtualFileSystem.VirtualFileManager;
@@ -45,7 +46,6 @@ import java.util.concurrent.CompletableFuture;
  * @author yudong
  */
 public class HttpProcessHandler extends BaseProcessHandler {
-    public final HttpMethod httpMethod;
     private final String selectedEnv;
     public final LocalizeValue tabName;
     public final Project project;
@@ -63,7 +63,7 @@ public class HttpProcessHandler extends BaseProcessHandler {
     private final HttpRequestEnum methodType;
     private final HttpResponseHandler responseHandler;
 
-    private final List<org.javamaster.httpclient.model.PreJsFile> preJsFiles;
+    private final List<PreJsFile> preJsFiles;
     private final List<HttpScriptBody> jsListBeforeReq;
     private final HttpScriptBody jsAfterReq;
     private final Map<String, String> paramMap;
@@ -76,9 +76,12 @@ public class HttpProcessHandler extends BaseProcessHandler {
 
     public boolean hasError = false;
 
+    private String myOutPutFilePath;
+
+    private Image myIcon;
+
     @RequiredReadAction
     public HttpProcessHandler(HttpMethod httpMethod, String selectedEnv) {
-        this.httpMethod = httpMethod;
         this.selectedEnv = selectedEnv;
         this.tabName = HttpUtilsPart.getTabName(httpMethod);
         this.project = httpMethod.getProject();
@@ -101,6 +104,24 @@ public class HttpProcessHandler extends BaseProcessHandler {
 
         HttpVersion httpVersion = request.getVersion();
         this.version = httpVersion != null ? httpVersion.getVersion() : consulo.http.HttpVersion.HTTP_1_1;
+
+        HttpRequestTarget requestTargetLocal = PsiTreeUtil.getNextSiblingOfType(httpMethod, HttpRequestTarget.class);
+
+        HttpRequest httpRequest = PsiTreeUtil.getParentOfType(requestTargetLocal, HttpRequest.class);
+
+        myIcon = HttpUtils.pickMethodIcon(httpMethod.getText());
+
+        HttpOutputFile httpOutputFile = PsiTreeUtil.getChildOfType(httpRequest, HttpOutputFile.class);
+        if (httpOutputFile != null) {
+            HttpFilePath filePath = httpOutputFile.getFilePath();
+            if (filePath != null) {
+                myOutPutFilePath = filePath.getText();
+            }
+        }
+    }
+
+    public Image getIcon() {
+        return myIcon;
     }
 
     @RequiredUIAccess
@@ -623,20 +644,8 @@ public class HttpProcessHandler extends BaseProcessHandler {
 
     @RequiredUIAccess
     private void dealResponse(HttpInfo httpInfo, String parentPath) {
-        HttpRequestTarget requestTargetLocal = PsiTreeUtil.getNextSiblingOfType(httpMethod, HttpRequestTarget.class);
 
-        HttpRequest httpRequest = PsiTreeUtil.getParentOfType(requestTargetLocal, HttpRequest.class);
-
-        String outPutFilePath = null;
-        HttpOutputFile httpOutputFile = PsiTreeUtil.getChildOfType(httpRequest, HttpOutputFile.class);
-        if (httpOutputFile != null) {
-            HttpFilePath filePath = httpOutputFile.getFilePath();
-            if (filePath != null) {
-                outPutFilePath = filePath.getText();
-            }
-        }
-
-        String saveResult = saveResToFile(outPutFilePath, parentPath, httpInfo.getByteArray());
+        String saveResult = saveResToFile(myOutPutFilePath, parentPath, httpInfo.getByteArray());
         if (saveResult != null) {
             httpInfo.getHttpResDescList().add(0, saveResult);
         }
@@ -731,26 +740,7 @@ public class HttpProcessHandler extends BaseProcessHandler {
             Application.get().invokeLater(loadingRemover::run);
         }
 
-        /// TODO
-//        if (wsRequest != null) {
-//            wsRequest.abortConnect();
-//        }
-
-        // TODO
-//        if (serverSocket != null) {
-//            try {
-//                serverSocket.close();
-//            }
-//            catch (Exception e) {
-//                // ignore
-//            }
-//        }
-
         int code = hasError ? HttpUtils.FAILED : HttpUtils.SUCCESS;
-
-        httpMethod.putUserData(HttpUtils.requestFinishedKey, code);
-
-       // TODO RunFileHandler.resetInterrupt();
 
         notifyProcessTerminated(code);
     }

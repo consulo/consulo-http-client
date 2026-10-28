@@ -1,5 +1,6 @@
 package org.javamaster.httpclient.impl.dashboard;
 
+import consulo.annotation.access.RequiredReadAction;
 import consulo.annotation.component.ExtensionImpl;
 import consulo.execution.RunnerAndConfigurationSettings;
 import consulo.execution.dashboard.RunDashboardCustomizer;
@@ -58,9 +59,7 @@ public class HttpRunDashboardCustomizer extends RunDashboardCustomizer {
             return false;
         }
 
-        Image icon = HttpUtils.pickMethodIcon(processHandler.httpMethod.getText());
-
-        presentation.setIcon(icon);
+        presentation.setIcon(processHandler.getIcon());
 
         Long costTimes = processHandler.costTimes;
         presentation.addText(" Status: " + status + "(" + costTimes + " ms)", SimpleTextAttributes.GRAYED_ATTRIBUTES);
