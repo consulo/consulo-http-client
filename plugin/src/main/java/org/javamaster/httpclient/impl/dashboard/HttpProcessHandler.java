@@ -656,12 +656,11 @@ public class HttpProcessHandler extends BaseProcessHandler {
             LocalizeValue error = (myThrowable instanceof CancellationException || myThrowable.getCause() instanceof CancellationException)
                 ? HttpClientLocalize.reqInterrupted(tabName)
                 : HttpClientLocalize.reqFailed(tabName, myThrowable);
-            String msg = "<div style='font-size:13pt'>" + error + "</div>";
-            toolWindowManager.notifyByBalloon(ToolWindowId.SERVICES, NotificationType.ERROR, msg);
+            toolWindowManager.notifyByBalloon(ToolWindowId.SERVICES, NotificationType.ERROR, error.get());
         }
         else {
-            String msg = "<div style='font-size:13pt'>" + tabName + " " + HttpClientLocalize.requestSuccess() + "!</div>";
-            toolWindowManager.notifyByBalloon(ToolWindowId.SERVICES, NotificationType.INFORMATION, msg);
+            String msg = tabName + " " + HttpClientLocalize.requestSuccess();
+            toolWindowManager.notifyByBalloon(ToolWindowId.SERVICES, NotificationType.SUCCESS, msg);
         }
     }
 
