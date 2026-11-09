@@ -9,8 +9,6 @@ module consulo.rest.client.api {
     requires consulo.execution.api;
     requires consulo.http.api;
 
-    requires transitive org.apache.httpcomponents.httpcore;
-    requires transitive org.apache.httpcomponents.httpmime;
 
     requires transitive com.google.common;
     requires transitive com.google.gson;
@@ -25,6 +23,7 @@ module consulo.rest.client.api {
     exports org.javamaster.httpclient.parser;
     exports org.javamaster.httpclient.psi;
     exports org.javamaster.httpclient.psi.impl;
+    exports org.javamaster.httpclient.impl.psi;
     exports org.javamaster.httpclient.highlighting;
     exports org.javamaster.httpclient.ui;
     exports consulo.httpClient;
@@ -33,4 +32,11 @@ module consulo.rest.client.api {
     exports org.javamaster.httpclient.model;
     exports org.javamaster.httpclient.run;
     exports org.javamaster.httpclient.utils;
+
+    exports consulo.httpClient.execution;
+    exports consulo.httpClient.execution.env;
+    exports consulo.httpClient.execution.runner;
+    exports org.javamaster.httpclient.impl.enums;
+    exports org.javamaster.httpclient.impl.js;
+    exports org.javamaster.httpclient.impl.resolve;
 }

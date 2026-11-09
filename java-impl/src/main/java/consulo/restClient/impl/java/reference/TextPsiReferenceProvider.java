@@ -8,7 +8,6 @@ import consulo.language.psi.PsiReference;
 import consulo.language.psi.PsiReferenceProvider;
 import consulo.language.psi.util.PsiTreeUtil;
 import consulo.language.util.ProcessingContext;
-import org.apache.http.entity.ContentType;
 import org.javamaster.httpclient.impl.reference.support.QueryValuePsiReference;
 import org.javamaster.httpclient.impl.reference.support.TextVariableArgNamePsiReference;
 import org.javamaster.httpclient.impl.reference.support.TextVariableNamePsiReference;
@@ -49,8 +48,8 @@ public class TextPsiReferenceProvider extends PsiReferenceProvider {
             return PsiReference.EMPTY_ARRAY;
         }
 
-        if (request.getContentType() == ContentType.APPLICATION_FORM_URLENCODED
-            || (parent instanceof HttpMultipartField && ((HttpMultipartField) parent).getContentType() == ContentType.APPLICATION_FORM_URLENCODED)
+        if (isFormUrlEncoded(request.getContentType())
+            || (parent instanceof HttpMultipartField && isFormUrlEncoded(((HttpMultipartField) parent).getContentType()))
         ) {
             var query = UrlEncodedLazyFileElement.parse(text);
             if (query == null) {
@@ -161,4 +160,8 @@ public class TextPsiReferenceProvider extends PsiReferenceProvider {
         return references;
     }
 
+
+    private static boolean isFormUrlEncoded(@Nullable HttpContentType contentType) {
+        return contentType != null && "application/x-www-form-urlencoded".equalsIgnoreCase(contentType.mimeType());
+    }
 }

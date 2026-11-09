@@ -6,7 +6,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import consulo.util.io.FileUtil;
-import org.apache.http.entity.ContentType;
 import org.javamaster.httpclient.NlsBundle;
 import org.javamaster.httpclient.impl.doc.support.HttpHeaderDocumentation;
 import org.javamaster.httpclient.utils.DubboUtilsPart;
@@ -64,7 +63,7 @@ public class HttpHeadersDictionary {
         "text/event-stream",
         "application/stream+json",
         "application/x-ndjson",
-        ContentType.MULTIPART_FORM_DATA.getMimeType() + "; boundary=----WebBoundary"
+        "multipart/form-data; boundary=----WebBoundary"
     );
 
     private static final List<String> SEC_WEBSOCKET_PROTOCOL_VALUES = Arrays.asList(

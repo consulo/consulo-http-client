@@ -43,6 +43,9 @@
                 <configuration>
                     <dependencies>
                         <dependency>com.intellij.images</dependency>
+                        <dependency>consulo.javascript</dependency>
+                        <!-- required by consulo.javascript -->
+                        <dependency>com.intellij.xml</dependency>
                     </dependencies>
                     <packaging>
                         <skip>${dev.mode}</skip>
@@ -69,16 +72,28 @@
             <!--<version>2.10.0</version>-->
         <!--</dependency>-->
 
-        <!--<dependency>-->
-            <!--<groupId>org.mozilla</groupId>-->
-            <!--<artifactId>rhino</artifactId>-->
-            <!--<version>1.9.0</version>-->
-        <!--</dependency>-->
+        <dependency>
+            <groupId>org.mozilla</groupId>
+            <artifactId>rhino</artifactId>
+            <version>1.7.15</version>
+        </dependency>
 
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>consulo.http.client.api</artifactId>
             <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>consulo.http.client.script.rhino</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>consulo.http.client.javascript.impl</artifactId>
+            <version>${project.version}</version>
+            <scope>runtime</scope>
         </dependency>
 
         <!-- platform -->
@@ -123,13 +138,6 @@
             <artifactId>forms_rt</artifactId>
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpmime</artifactId>
-            <version>4.5.14</version>
-            <scope>provided</scope>
-        </dependency>
-
         <!--<dependency>-->
             <!--<groupId>${project.groupId}</groupId>-->
             <!--<artifactId>consulo.json.api</artifactId>-->

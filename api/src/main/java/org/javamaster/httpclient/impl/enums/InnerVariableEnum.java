@@ -13,9 +13,12 @@ import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.commons.lang3.time.DateUtils;
-import org.javamaster.httpclient.impl.ui.HttpEditorTopForm;
-import org.javamaster.httpclient.impl.utils.HttpUtils;
-import org.javamaster.httpclient.impl.utils.VirtualFileUtils;
+import consulo.httpClient.execution.HttpFileContentReader;
+import consulo.language.util.ModuleUtilCore;
+import consulo.module.Module;
+import consulo.virtualFileSystem.LocalFileSystem;
+import consulo.virtualFileSystem.VirtualFile;
+import org.javamaster.httpclient.utils.HttpUtilsPart;
 
 import java.io.File;
 import java.io.IOException;
@@ -300,12 +303,12 @@ public enum InnerVariableEnum {
             }
 
             String path = (String) args[0];
-            String filePath = HttpUtils.constructFilePath(path, httpFileParentPath);
+            String filePath = HttpUtilsPart.constructFilePath(path, httpFileParentPath);
             File file = new File(filePath);
 
             byte[] bytes;
             try {
-                bytes = VirtualFileUtils.readNewestBytes(file);
+                bytes = HttpFileContentReader.DISK.readBytes(file);
             }
             catch (IOException e) {
                 throw new RuntimeException(e);
@@ -351,11 +354,11 @@ public enum InnerVariableEnum {
             }
 
             String path = (String) args[0];
-            String filePath = HttpUtils.constructFilePath(path, httpFileParentPath);
+            String filePath = HttpUtilsPart.constructFilePath(path, httpFileParentPath);
             File file = new File(filePath);
 
             try {
-                return VirtualFileUtils.readNewestContent(file);
+                return HttpFileContentReader.DISK.readText(file);
             }
             catch (IOException e) {
                 throw new RuntimeException(e);
@@ -798,19 +801,13 @@ public enum InnerVariableEnum {
 
         @Override
         public String exec(String httpFileParentPath, Project project) {
-            var triple = HttpEditorTopForm.getTriple(project);
-            if (triple == null) {
-                return null;
-            }
-
-            var module = triple.getThird();
+            VirtualFile directory = LocalFileSystem.getInstance().findFileByPath(httpFileParentPath);
+            Module module = directory == null ? null : ModuleUtilCore.findModuleForFile(directory, project);
             if (module == null) {
                 return null;
             }
 
-            String dirPath = module.getModuleDirPath();
-
-            return dirPath + "/target";
+            return module.getModuleDirPath() + "/target";
         }
     },
     PROJECT_ROOT("$projectRoot") {

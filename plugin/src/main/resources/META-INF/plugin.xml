@@ -9,6 +9,8 @@
     
     <description>Provides the ability to edit and execute HTTP requests from the code editor</description>
 
+    <depends optional="true">consulo.javascript</depends>
+
     <extensions defaultExtensionNs="com.intellij">
 
         <notificationGroup id="HttpClient.STICKY_BALLOON"

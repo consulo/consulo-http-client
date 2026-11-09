@@ -47,6 +47,8 @@ import static org.javamaster.httpclient.psi.HttpTypes.*;
 
 EOL=\R
 EOL_MULTI=[ ]*\R+
+// after "{%": the script may start on the same line - "> {% client.log(1) %}"
+SCRIPT_OPEN_TAIL=[ \t]*\R*
 ONLY_SPACE=[ ]+
 WHITE_SPACE=\s+
 LINE_COMMENT="//"[^\r\n]*
@@ -75,8 +77,8 @@ STRING=('([^'])*'|\"([^\"])*\")
 <YYINITIAL> {
   {REQUEST_COMMENT}{EOL}      { return REQUEST_COMMENT; }
   "# @"                       { yybegin(IN_DIRECTION_NAME); return DIRECTION_COMMENT_START; }
-  "<! {%"{EOL_MULTI}          { yybegin(IN_GLOBAL_SCRIPT); return GLOBAL_START_SCRIPT_BRACE; }
-  "< {%"{EOL_MULTI}           { yybegin(IN_PRE_SCRIPT); return IN_START_SCRIPT_BRACE; }
+  "<! {%"{SCRIPT_OPEN_TAIL}          { yybegin(IN_GLOBAL_SCRIPT); return GLOBAL_START_SCRIPT_BRACE; }
+  "< {%"{SCRIPT_OPEN_TAIL}           { yybegin(IN_PRE_SCRIPT); return IN_START_SCRIPT_BRACE; }
   "@"                         { yybegin(IN_GLOBAL_VARIABLE); return AT; }
   {REQUEST_METHOD}            { yybegin(IN_FIRST_LINE); return REQUEST_METHOD; }
   {WHITE_SPACE}               { return WHITE_SPACE; }
@@ -252,8 +254,8 @@ STRING=('([^'])*'|\"([^\"])*\")
   ">> "                              { nextState = IN_OUTPUT_FILE_PATH; yypushback(yylength()); yybegin(IN_TRIM_PREFIX_SPACE); return detectBodyType(this); }
   {EOL_MULTI}"<> "                   { nextState = IN_HISTORY_BODY_FILE_PART; yypushback(yylength()); yybegin(IN_TRIM_PREFIX_SPACE); return detectBodyType(this); }
   "<> "                              { nextState = IN_HISTORY_BODY_FILE_PART; yypushback(yylength()); yybegin(IN_TRIM_PREFIX_SPACE); return detectBodyType(this); }
-  {EOL_MULTI}"> {%"{EOL_MULTI}       { nextState = IN_POST_SCRIPT; yypushback(yylength()); yybegin(IN_TRIM_PREFIX_SPACE); return detectBodyType(this); }
-  "> {%"{EOL_MULTI}                  { if(LexerUtils.endsWithLineBreak(this)) { nextState = IN_POST_SCRIPT; yypushback(yylength()); yybegin(IN_TRIM_PREFIX_SPACE); return detectBodyType(this); } }
+  {EOL_MULTI}"> {%"{SCRIPT_OPEN_TAIL}       { nextState = IN_POST_SCRIPT; yypushback(yylength()); yybegin(IN_TRIM_PREFIX_SPACE); return detectBodyType(this); }
+  "> {%"{SCRIPT_OPEN_TAIL}                  { if(LexerUtils.endsWithLineBreak(this)) { nextState = IN_POST_SCRIPT; yypushback(yylength()); yybegin(IN_TRIM_PREFIX_SPACE); return detectBodyType(this); } }
   {EOL_MULTI}{MESSAGE_BOUNDARY}\s*   { nextState = IN_MULTIPART; yypushback(yylength()); yybegin(IN_TRIM_PREFIX_SPACE); return detectBodyType(this); }
   {MESSAGE_BOUNDARY}\s*              { if(LexerUtils.endsWithLineBreak(this)) { nextState = IN_MULTIPART; yypushback(yylength()); yybegin(IN_TRIM_PREFIX_SPACE); return detectBodyType(this); } }
   {EOL_MULTI}{REQUEST_COMMENT}{EOL}  { nextState = YYINITIAL; yypushback(yylength()); yybegin(IN_TRIM_PREFIX_SPACE); return detectBodyType(this); }
@@ -280,7 +282,7 @@ STRING=('([^'])*'|\"([^\"])*\")
 }
 
 <IN_POST_SCRIPT> {
-  "> {%"{EOL_MULTI}                { return OUT_START_SCRIPT_BRACE; }
+  "> {%"{SCRIPT_OPEN_TAIL}                { return OUT_START_SCRIPT_BRACE; }
   "%}"\s*                          { yypushback(yylength()); yybegin(IN_POST_SCRIPT_END); return SCRIPT_BODY_PAET; }
   <<EOF>>                          { yybegin(YYINITIAL); return SCRIPT_BODY_PAET; }
   [^%]+                            {  }

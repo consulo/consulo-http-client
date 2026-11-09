@@ -150,7 +150,8 @@ variable_arg ::= INTEGER | STRING {
 }
 
 port ::= COLON PORT_SEGMENT
-pathAbsolute ::= (SLASH (SEGMENT | variable)?)+ {
+// a path may start with a variable ({{host}}:8080{{path}}) and mix text and variables in a segment (/user-{{id}})
+pathAbsolute ::= (SLASH | SEGMENT | variable)+ {
     methods = [
         getReferences
     ]

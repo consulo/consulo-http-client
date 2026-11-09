@@ -4,12 +4,12 @@ import consulo.language.psi.PsiElement;
 import consulo.language.psi.PsiFile;
 import consulo.language.psi.util.PsiTreeUtil;
 import consulo.project.Project;
-import org.javamaster.httpclient.env.EnvFileService;
+import consulo.httpClient.execution.env.HttpEnvironment;
 import org.javamaster.httpclient.impl.enums.InnerVariableEnum;
 import org.javamaster.httpclient.impl.js.JsExecutor;
 import org.javamaster.httpclient.impl.psi.TextVariableLazyFileElement;
 import org.javamaster.httpclient.psi.*;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -23,14 +23,14 @@ import java.util.regex.Pattern;
  *
  * @author yudong
  */
-public class  VariableResolver {
+public class VariableResolver {
     public static final Pattern VARIABLE_PATTERN = Pattern.compile("(\\{\\{[^{}]+}})");
     public static final String PROPERTY_PREFIX = "$property";
     public static final String ENV_PREFIX = "$env";
 
     private final JsExecutor jsExecutor;
     private final PsiFile httpFile;
-    private final String selectedEnv;
+    private final HttpEnvironment environment;
     private final Project project;
     private final String httpFileParentPath;
     private final LinkedHashMap<String, String> fileScopeVariableMap;
@@ -38,12 +38,12 @@ public class  VariableResolver {
     public VariableResolver(
             @Nullable JsExecutor jsExecutor,
             PsiFile httpFile,
-            @Nullable String selectedEnv,
+            HttpEnvironment environment,
             Project project
     ) {
         this.jsExecutor = jsExecutor;
         this.httpFile = httpFile;
-        this.selectedEnv = selectedEnv;
+        this.environment = environment;
         this.project = project;
         this.httpFileParentPath = httpFile.getVirtualFile().getParent().getPath();
         this.fileScopeVariableMap = getFileGlobalVariables();
@@ -185,8 +185,11 @@ public class  VariableResolver {
             }
         }
 
-        EnvFileService envFileService = EnvFileService.getService(project);
-        String envValue = envFileService.getEnvValue(variable, selectedEnv, httpFileParentPath);
+        String envValue = environment.get(variable);
+        if (envValue != null) {
+            // env files may reference built-in variables, like the plugin always supported
+            envValue = resolveInnerVariable(envValue, httpFileParentPath, project);
+        }
         if (envValue != null) {
             return envValue;
         }
@@ -217,6 +220,14 @@ public class  VariableResolver {
             return null;
         }
 
+        return execInnerVariable(variableEnum, httpFileParentPath, args, project);
+    }
+
+    @Nullable
+    private static String execInnerVariable(InnerVariableEnum variableEnum,
+                                            String httpFileParentPath,
+                                            @Nullable Object[] args,
+                                            Project project) {
         try {
             return variableEnum.exec(httpFileParentPath, args != null ? args : new Object[0]);
         } catch (UnsupportedOperationException e) {
@@ -254,9 +265,10 @@ public class  VariableResolver {
             String name = variableName.getName();
 
             InnerVariableEnum variableEnum = InnerVariableEnum.getEnum(name);
-            String resolvedResult = variableEnum != null ? variableEnum.exec(parentPath, project) : matchStr;
-
-            matcher.appendReplacement(result, escapeRegexp(resolvedResult));
+            HttpVariableArgs variableArgs = variable.getVariableArgs();
+            Object[] args = variableArgs != null ? variableArgs.toArgsList() : null;
+            String resolvedResult = variableEnum != null ? execInnerVariable(variableEnum, parentPath, args, project) : null;
+            matcher.appendReplacement(result, escapeRegexp(resolvedResult != null ? resolvedResult : matchStr));
         }
         matcher.appendTail(result);
 

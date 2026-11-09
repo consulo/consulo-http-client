@@ -106,11 +106,5 @@
             <artifactId>guava</artifactId>
             <optional>true</optional>
         </dependency>
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpmime</artifactId>
-            <version>4.5.14</version>
-            <optional>true</optional>
-        </dependency>
     </dependencies>
 </project>
