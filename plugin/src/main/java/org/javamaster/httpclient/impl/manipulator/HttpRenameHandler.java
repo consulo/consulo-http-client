@@ -43,7 +43,7 @@ public class HttpRenameHandler implements RenameHandler {
         RenamePsiElementProcessor processor = RenamePsiElementProcessor.forElement(parent);
 
         // 以后可以考虑实现成类似重命名类名那样的效果,不弹出弹窗,这样用户体验更好
-        processor.createRenameDialog(project, parent, parent, editor).show();
+        processor.createRenameDialog(project, parent, parent, editor).showAsync();
     }
 
     @Override
